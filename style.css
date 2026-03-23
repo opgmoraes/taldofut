@@ -1,0 +1,543 @@
+/* =============================================
+   LISTA DE FUTEBOL — STYLE.CSS
+   Design: Campo verde, toque premium
+   ============================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap');
+
+/* ---- Variáveis ---- */
+:root {
+  --verde:      #1a7a3c;
+  --verde-claro:#22a050;
+  --verde-neon: #39e07a;
+  --preto:      #0d0d0d;
+  --cinza-esc:  #1a1a1a;
+  --cinza-med:  #2a2a2a;
+  --cinza:      #3d3d3d;
+  --branco:     #f5f5f5;
+  --ouro:       #f5c842;
+  --vermelho:   #e53e3e;
+  --radius:     12px;
+  --shadow:     0 4px 24px rgba(0,0,0,0.4);
+}
+
+/* ---- Reset ---- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Barlow', sans-serif;
+  background-color: var(--preto);
+  color: var(--branco);
+  min-height: 100vh;
+  background-image:
+    radial-gradient(ellipse at 20% 0%, rgba(26,122,60,0.18) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(26,122,60,0.12) 0%, transparent 60%);
+}
+
+/* ---- Padrão campo (listras sutis) ---- */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    170deg,
+    transparent,
+    transparent 60px,
+    rgba(255,255,255,0.012) 60px,
+    rgba(255,255,255,0.012) 120px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ---- Header ---- */
+.header {
+  background: linear-gradient(135deg, var(--verde) 0%, #0f5a2a 100%);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+  z-index: 10;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.5);
+  border-bottom: 3px solid var(--verde-neon);
+}
+
+.header-icon {
+  font-size: 2.4rem;
+  filter: drop-shadow(0 0 8px rgba(57,224,122,0.4));
+}
+
+.header h1 {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 2rem;
+  letter-spacing: 2px;
+  color: var(--branco);
+  text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  line-height: 1;
+}
+
+.header p {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.65);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.header-badge {
+  margin-left: auto;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.15);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--verde-neon);
+}
+
+/* ---- Container ---- */
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 16px 80px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- Seções / Cards ---- */
+.section {
+  background: var(--cinza-esc);
+  border: 1px solid var(--cinza);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+  transition: border-color 0.2s;
+}
+
+.section:hover { border-color: rgba(57,224,122,0.3); }
+
+.section-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--verde-neon);
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(57,224,122,0.3), transparent);
+}
+
+/* ---- Formulários ---- */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.form-grid.full { grid-template-columns: 1fr; }
+
+@media (max-width: 600px) {
+  .form-grid { grid-template-columns: 1fr; }
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-group label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+}
+
+input[type="text"],
+input[type="date"],
+input[type="number"],
+select {
+  background: var(--cinza-med);
+  border: 1px solid var(--cinza);
+  border-radius: 8px;
+  padding: 11px 14px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 0.95rem;
+  color: var(--branco);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--verde-neon);
+  box-shadow: 0 0 0 3px rgba(57,224,122,0.12);
+}
+
+input::placeholder { color: rgba(255,255,255,0.25); }
+
+/* ---- Botões ---- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border-radius: 8px;
+  border: none;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--verde-claro), var(--verde));
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(26,122,60,0.4);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--verde-neon), var(--verde-claro));
+  box-shadow: 0 6px 24px rgba(57,224,122,0.35);
+  transform: translateY(-1px);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1.5px solid var(--cinza);
+  color: var(--branco);
+}
+
+.btn-outline:hover {
+  border-color: var(--verde-neon);
+  color: var(--verde-neon);
+}
+
+.btn-danger {
+  background: transparent;
+  border: 1.5px solid rgba(229,62,62,0.4);
+  color: var(--vermelho);
+}
+
+.btn-danger:hover {
+  background: rgba(229,62,62,0.1);
+  border-color: var(--vermelho);
+}
+
+.btn-gold {
+  background: linear-gradient(135deg, var(--ouro), #c9a100);
+  color: var(--preto);
+}
+
+.btn-gold:hover {
+  box-shadow: 0 4px 20px rgba(245,200,66,0.4);
+  transform: translateY(-1px);
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  border-radius: 6px;
+}
+
+.btn-full { width: 100%; }
+
+/* ---- Stats Bar ---- */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: var(--cinza-med);
+  border: 1px solid var(--cinza);
+  border-radius: 10px;
+  padding: 16px 14px;
+  text-align: center;
+}
+
+.stat-number {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 2rem;
+  color: var(--verde-neon);
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  margin-top: 4px;
+}
+
+/* ---- Lista de Jogadores ---- */
+.player-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.player-item {
+  background: var(--cinza-med);
+  border: 1px solid var(--cinza);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: border-color 0.2s, background 0.2s;
+  animation: slideIn 0.25s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.player-item:hover { border-color: rgba(57,224,122,0.25); }
+
+.player-number {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 1.1rem;
+  color: rgba(255,255,255,0.25);
+  min-width: 24px;
+  text-align: center;
+}
+
+.player-name {
+  flex: 1;
+  font-weight: 600;
+  font-size: 0.97rem;
+}
+
+/* Estrelas de nível */
+.player-stars {
+  display: flex;
+  gap: 2px;
+}
+
+.star {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.15);
+}
+
+.star.filled { color: var(--ouro); text-shadow: 0 0 6px rgba(245,200,66,0.5); }
+
+/* Badges */
+.badge {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.badge-pago    { background: rgba(57,224,122,0.15); color: var(--verde-neon); border: 1px solid rgba(57,224,122,0.3); }
+.badge-pendente{ background: rgba(229,62,62,0.12); color: #f87171; border: 1px solid rgba(229,62,62,0.3); }
+.badge-goleiro { background: rgba(245,200,66,0.12); color: var(--ouro); border: 1px solid rgba(245,200,66,0.3); }
+
+/* ---- Botões de ação do jogador ---- */
+.player-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* ---- Link compartilhável ---- */
+.link-box {
+  background: var(--cinza-med);
+  border: 1px solid rgba(57,224,122,0.3);
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  word-break: break-all;
+}
+
+.link-box span {
+  flex: 1;
+  font-size: 0.85rem;
+  color: var(--verde-neon);
+  font-family: monospace;
+}
+
+/* ---- Sorteio de Times ---- */
+.times-resultado {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.time-card {
+  background: var(--cinza-med);
+  border: 1px solid var(--cinza);
+  border-radius: 10px;
+  overflow: hidden;
+  animation: popIn 0.3s ease;
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.time-header {
+  padding: 10px 14px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--preto);
+}
+
+.time-body { padding: 10px 14px; }
+
+.time-player {
+  padding: 5px 0;
+  font-size: 0.88rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.time-player:last-child { border-bottom: none; }
+
+/* ---- Row de input + botão ---- */
+.input-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.input-row input { flex: 1; }
+
+/* ---- Toast ---- */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--cinza-med);
+  border: 1px solid var(--verde-neon);
+  color: var(--verde-neon);
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  z-index: 999;
+  transition: transform 0.3s ease;
+  white-space: nowrap;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ---- Star selector (lista.html) ---- */
+.star-selector {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.star-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: rgba(255,255,255,0.2);
+  transition: color 0.15s, transform 0.15s;
+  padding: 0;
+  line-height: 1;
+}
+
+.star-btn:hover, .star-btn.active {
+  color: var(--ouro);
+  transform: scale(1.2);
+  text-shadow: 0 0 8px rgba(245,200,66,0.6);
+}
+
+/* ---- Info cards (lista.html) ---- */
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.info-item {
+  background: var(--cinza-med);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.info-item-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 4px;
+}
+
+.info-item-value {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--branco);
+}
+
+.info-item-value.destaque { color: var(--verde-neon); font-size: 1.15rem; }
+
+/* ---- Empty state ---- */
+.empty-state {
+  text-align: center;
+  padding: 32px;
+  color: rgba(255,255,255,0.25);
+  font-size: 0.9rem;
+}
+
+.empty-state .emoji { font-size: 2.5rem; margin-bottom: 8px; }
+
+/* ---- Divider ---- */
+.divider {
+  height: 1px;
+  background: var(--cinza);
+  margin: 20px 0;
+}
+
+/* ---- Responsivo ---- */
+@media (max-width: 500px) {
+  .header h1 { font-size: 1.5rem; }
+  .stats-bar { grid-template-columns: 1fr 1fr; }
+  .stats-bar .stat-card:last-child { grid-column: span 2; }
+  .info-grid { grid-template-columns: 1fr; }
+  .player-actions .btn-sm span { display: none; }
+}

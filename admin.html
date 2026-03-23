@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Lista de Fut ⚽</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Extras específicos do admin */
+    .tab-bar {
+      display: flex;
+      gap: 4px;
+      background: var(--cinza-med);
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 20px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 10px 8px;
+      border: none;
+      border-radius: 8px;
+      background: none;
+      color: rgba(255,255,255,0.45);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .tab-btn.active {
+      background: var(--cinza-esc);
+      color: var(--verde-neon);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .evento-selector {
+      background: var(--cinza-med);
+      border: 1px solid rgba(57,224,122,0.3);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .evento-selector label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      white-space: nowrap;
+    }
+    .evento-selector select { flex: 1; min-width: 160px; }
+
+    .nivel-admin-row {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .nivel-admin-btn {
+      background: none;
+      border: none;
+      font-size: 1.1rem;
+      cursor: pointer;
+      color: rgba(255,255,255,0.15);
+      transition: color 0.15s, transform 0.15s;
+      padding: 0 2px;
+      line-height: 1;
+    }
+    .nivel-admin-btn:hover { color: var(--ouro); transform: scale(1.2); }
+    .nivel-admin-btn.active { color: var(--ouro); }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <span class="header-icon">⚽</span>
+  <div>
+    <h1>Lista de Fut</h1>
+    <p>Painel do Administrador</p>
+  </div>
+  <span class="header-badge">Admin</span>
+</header>
+
+<div class="container">
+
+  <!-- ── Seletor de evento ── -->
+  <div class="evento-selector">
+    <label>Evento ativo:</label>
+    <select id="eventoSelect" onchange="trocarEvento()">
+      <option value="">— Crie ou selecione um evento —</option>
+    </select>
+    <button class="btn btn-danger btn-sm" onclick="deletarEvento()" title="Excluir evento">🗑 Excluir</button>
+  </div>
+
+  <!-- ── Tabs ── -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="abrirTab('tab-evento', this)">🗓 Evento</button>
+    <button class="tab-btn" onclick="abrirTab('tab-jogadores', this)">👥 Jogadores</button>
+    <button class="tab-btn" onclick="abrirTab('tab-sorteio', this)">🎲 Sorteio</button>
+  </div>
+
+  <!-- ══════════════════════════════════
+       TAB 1 — CRIAR / EDITAR EVENTO
+       ══════════════════════════════════ -->
+  <div id="tab-evento" class="tab-panel active">
+    <div class="section">
+      <div class="section-title">📋 Novo Evento</div>
+      <div class="form-grid">
+        <div class="field-group">
+          <label>Nome do evento</label>
+          <input type="text" id="evNome" placeholder="Ex: Fut de Quinta" />
+        </div>
+        <div class="field-group">
+          <label>Data</label>
+          <input type="date" id="evData" />
+        </div>
+        <div class="field-group">
+          <label>Local</label>
+          <input type="text" id="evLocal" placeholder="Ex: Campo do Zé" />
+        </div>
+        <div class="field-group">
+          <label>Valor por pessoa (R$)</label>
+          <input type="number" id="evValor" placeholder="0,00" min="0" step="0.01" />
+        </div>
+      </div>
+      <div style="margin-top:16px">
+        <button class="btn btn-primary btn-full" onclick="criarEvento()">✅ Criar Evento</button>
+      </div>
+    </div>
+
+    <!-- Link compartilhável -->
+    <div id="linkSection" class="section" style="display:none">
+      <div class="section-title">🔗 Link Compartilhável</div>
+      <p style="font-size:0.85rem; color:rgba(255,255,255,0.5); margin-bottom:8px">
+        Envie este link para os jogadores se cadastrarem:
+      </p>
+      <div class="link-box">
+        <span id="linkTexto"></span>
+        <button class="btn btn-outline btn-sm" onclick="copyToClipboard(document.getElementById('linkTexto').textContent)">📋 Copiar</button>
+        <a id="linkAbrir" class="btn btn-primary btn-sm" target="_blank">↗ Abrir</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       TAB 2 — JOGADORES
+       ══════════════════════════════════ -->
+  <div id="tab-jogadores" class="tab-panel">
+
+    <!-- Stats -->
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-number" id="statTotal">0</div>
+        <div class="stat-label">Jogadores</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="statPagaram">0</div>
+        <div class="stat-label">Pagaram</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="statArrecadado">R$0</div>
+        <div class="stat-label">Arrecadado</div>
+      </div>
+    </div>
+
+    <!-- Adicionar jogador manualmente -->
+    <div class="section">
+      <div class="section-title">➕ Adicionar Jogador</div>
+      <div class="input-row" style="flex-wrap:wrap; gap:10px;">
+        <input type="text" id="nomeJogador" placeholder="Nome do jogador" style="min-width:140px" />
+        <div>
+          <div style="font-size:0.7rem; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:rgba(255,255,255,0.4); margin-bottom:4px;">Nível</div>
+          <div class="nivel-admin-row" id="nivelAdminInput">
+            <button class="nivel-admin-btn active" data-n="1" onclick="selecionarNivelAdmin(1)">★</button>
+            <button class="nivel-admin-btn" data-n="2" onclick="selecionarNivelAdmin(2)">★</button>
+            <button class="nivel-admin-btn" data-n="3" onclick="selecionarNivelAdmin(3)">★</button>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="adminAddPlayer()" style="align-self:flex-end">Adicionar</button>
+      </div>
+    </div>
+
+    <!-- Lista -->
+    <div class="section">
+      <div class="section-title">📋 Lista de Jogadores</div>
+      <div id="playerList"><div class="empty-state"><div class="emoji">🏟</div><p>Nenhum jogador ainda.<br>Selecione ou crie um evento.</p></div></div>
+      <div class="divider"></div>
+      <button class="btn btn-danger btn-sm" onclick="limparLista()">🗑 Limpar lista</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       TAB 3 — SORTEIO
+       ══════════════════════════════════ -->
+  <div id="tab-sorteio" class="tab-panel">
+    <div class="section">
+      <div class="section-title">🎲 Sorteio de Times</div>
+      <div class="field-group" style="max-width:200px; margin-bottom:16px">
+        <label>Número de times</label>
+        <input type="number" id="numTimes" value="2" min="2" max="8" />
+      </div>
+      <button class="btn btn-gold btn-full" onclick="realizarSorteio()">🎲 Sortear Agora!</button>
+
+      <!-- Goleiros separados -->
+      <div id="goleirosDisplay" style="margin-top:16px; display:none">
+        <div style="font-size:0.8rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--ouro); margin-bottom:8px;">🧤 Goleiros (fora do sorteio)</div>
+        <div id="goleirosLista"></div>
+      </div>
+    </div>
+
+    <div id="timesResultado" class="times-resultado"></div>
+  </div>
+
+</div><!-- /container -->
+
+<script src="script.js"></script>
+<script>
+/* ─── Estado local ─── */
+let eventoAtivo = null;
+let nivelSelecionadoAdmin = 1;
+
+/* ─── Inicialização ─── */
+function init() {
+  popularSelectEventos();
+  const salvo = localStorage.getItem('eventoAtivoAdmin');
+  if (salvo) {
+    document.getElementById('eventoSelect').value = salvo;
+    eventoAtivo = salvo;
+    mostrarLink();
+  }
+  renderTudo();
+}
+
+/* ─── Tabs ─── */
+function abrirTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+/* ─── Select de eventos ─── */
+function popularSelectEventos() {
+  const sel = document.getElementById('eventoSelect');
+  const events = getAllEvents();
+  const atual = sel.value;
+  sel.innerHTML = '<option value="">— Crie ou selecione um evento —</option>';
+  Object.values(events).forEach(e => {
+    const opt = document.createElement('option');
+    opt.value = e.id;
+    opt.textContent = e.nome + (e.data ? ' · ' + e.data : '');
+    sel.appendChild(opt);
+  });
+  if (atual) sel.value = atual;
+}
+
+function trocarEvento() {
+  eventoAtivo = document.getElementById('eventoSelect').value || null;
+  localStorage.setItem('eventoAtivoAdmin', eventoAtivo || '');
+  mostrarLink();
+  renderTudo();
+}
+
+/* ─── Criar evento ─── */
+function criarEvento() {
+  const nome  = document.getElementById('evNome').value.trim();
+  const data  = document.getElementById('evData').value;
+  const local = document.getElementById('evLocal').value.trim();
+  const valor = parseFloat(document.getElementById('evValor').value) || 0;
+
+  if (!nome) { showToast('⚠️ Dê um nome ao evento!'); return; }
+
+  const id = gerarId();
+  const evento = { id, nome, data, local, valor, jogadores: [] };
+  saveEvent(evento);
+
+  eventoAtivo = id;
+  localStorage.setItem('eventoAtivoAdmin', id);
+
+  popularSelectEventos();
+  document.getElementById('eventoSelect').value = id;
+  mostrarLink();
+  renderTudo();
+  showToast('✅ Evento criado!');
+
+  // Limpa campos
+  ['evNome','evData','evLocal','evValor'].forEach(id => document.getElementById(id).value = '');
+}
+
+/* ─── Deletar evento ─── */
+function deletarEvento() {
+  if (!eventoAtivo) { showToast('⚠️ Nenhum evento selecionado'); return; }
+  const evt = getEvent(eventoAtivo);
+  if (!confirm(`Excluir o evento "${evt.nome}"? Essa ação não pode ser desfeita.`)) return;
+
+  const all = getAllEvents();
+  delete all[eventoAtivo];
+  saveAllEvents(all);
+  eventoAtivo = null;
+  localStorage.removeItem('eventoAtivoAdmin');
+  popularSelectEventos();
+  document.getElementById('eventoSelect').value = '';
+  document.getElementById('linkSection').style.display = 'none';
+  renderTudo();
+  showToast('🗑 Evento excluído');
+}
+
+/* ─── Link compartilhável ─── */
+function mostrarLink() {
+  const section = document.getElementById('linkSection');
+  if (!eventoAtivo) { section.style.display = 'none'; return; }
+  const base = window.location.href.replace('admin.html', 'lista.html');
+  const url  = base.split('?')[0] + '?id=' + eventoAtivo;
+  document.getElementById('linkTexto').textContent = url;
+  document.getElementById('linkAbrir').href = url;
+  section.style.display = 'block';
+}
+
+/* ─── Nível admin ─── */
+function selecionarNivelAdmin(n) {
+  nivelSelecionadoAdmin = n;
+  document.querySelectorAll('#nivelAdminInput .nivel-admin-btn').forEach(btn => {
+    btn.classList.toggle('active', parseInt(btn.dataset.n) <= n);
+  });
+}
+
+/* ─── Adicionar jogador (admin) ─── */
+function adminAddPlayer() {
+  if (!eventoAtivo) { showToast('⚠️ Selecione ou crie um evento!'); return; }
+  const nome = document.getElementById('nomeJogador').value;
+  const res  = addPlayer(eventoAtivo, nome, nivelSelecionadoAdmin);
+  if (res === 'duplicado') { showToast('⚠️ Jogador já está na lista!'); return; }
+  if (!res) { showToast('⚠️ Digite um nome!'); return; }
+  document.getElementById('nomeJogador').value = '';
+  renderTudo();
+  showToast('✅ ' + nome.trim() + ' adicionado!');
+}
+
+/* ─── Limpar lista ─── */
+function limparLista() {
+  if (!eventoAtivo) return;
+  if (!confirm('Remover todos os jogadores da lista?')) return;
+  const evt = getEvent(eventoAtivo);
+  evt.jogadores = [];
+  saveEvent(evt);
+  renderTudo();
+  showToast('🗑 Lista limpa!');
+}
+
+/* ─── Renderizar tudo ─── */
+function renderTudo() {
+  renderStats();
+  renderJogadores();
+}
+
+function renderStats() {
+  if (!eventoAtivo) {
+    document.getElementById('statTotal').textContent = '0';
+    document.getElementById('statPagaram').textContent = '0';
+    document.getElementById('statArrecadado').textContent = 'R$0';
+    return;
+  }
+  const evt = getEvent(eventoAtivo);
+  if (!evt) return;
+  const pagaram = evt.jogadores.filter(j => j.pago).length;
+  const arrecadado = pagaram * (evt.valor || 0);
+  document.getElementById('statTotal').textContent = evt.jogadores.length;
+  document.getElementById('statPagaram').textContent = pagaram;
+  document.getElementById('statArrecadado').textContent = formatBRL(arrecadado);
+}
+
+function renderJogadores() {
+  const container = document.getElementById('playerList');
+  if (!eventoAtivo) {
+    container.innerHTML = '<div class="empty-state"><div class="emoji">🏟</div><p>Nenhum evento selecionado.</p></div>';
+    return;
+  }
+  const evt = getEvent(eventoAtivo);
+  if (!evt || evt.jogadores.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="emoji">👥</div><p>Nenhum jogador ainda.</p></div>';
+    return;
+  }
+
+  container.innerHTML = evt.jogadores.map((j, i) => `
+    <div class="player-item">
+      <span class="player-number">${i + 1}</span>
+
+      <span class="player-name">${j.nome}</span>
+
+      <!-- Estrelas (clicáveis no admin) -->
+      <div class="nivel-admin-row" style="gap:2px">
+        ${[1,2,3].map(n => `
+          <button class="nivel-admin-btn ${n <= (j.nivel||1) ? 'active' : ''}"
+            onclick="mudarNivel('${j.nome}', ${n})" title="${n} estrela${n>1?'s':''}">★</button>
+        `).join('')}
+      </div>
+
+      ${j.goleiro ? '<span class="badge badge-goleiro">🧤 Goleiro</span>' : ''}
+      <span class="badge ${j.pago ? 'badge-pago' : 'badge-pendente'}">
+        ${j.pago ? '✅ Pago' : '⏳ Pendente'}
+      </span>
+
+      <div class="player-actions">
+        <button class="btn btn-outline btn-sm" onclick="adminTogglePag('${j.nome}')" title="Alternar pagamento">
+          ${j.pago ? '↩ Desfazer' : '💰 Pagou'}
+        </button>
+        <button class="btn btn-outline btn-sm" onclick="adminToggleGoleiro('${j.nome}')" title="Marcar goleiro">
+          🧤
+        </button>
+        <button class="btn btn-danger btn-sm" onclick="adminRemove('${j.nome}')" title="Remover">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ─── Actions admin ─── */
+function adminTogglePag(nome) {
+  togglePagamento(eventoAtivo, nome);
+  renderTudo();
+}
+
+function adminToggleGoleiro(nome) {
+  toggleGoleiro(eventoAtivo, nome);
+  renderTudo();
+}
+
+function adminRemove(nome) {
+  if (!confirm(`Remover ${nome} da lista?`)) return;
+  removePlayer(eventoAtivo, nome);
+  renderTudo();
+  showToast('🗑 ' + nome + ' removido');
+}
+
+function mudarNivel(nome, nivel) {
+  setNivel(eventoAtivo, nome, nivel);
+  renderJogadores();
+}
+
+/* ─── Sorteio ─── */
+function realizarSorteio() {
+  if (!eventoAtivo) { showToast('⚠️ Selecione um evento!'); return; }
+  const n = parseInt(document.getElementById('numTimes').value) || 2;
+  const evt = getEvent(eventoAtivo);
+
+  // Mostra goleiros
+  const goleiros = evt.jogadores.filter(j => j.goleiro);
+  const divGol = document.getElementById('goleirosDisplay');
+  const listaGol = document.getElementById('goleirosLista');
+  if (goleiros.length > 0) {
+    divGol.style.display = 'block';
+    listaGol.innerHTML = goleiros.map(g =>
+      `<span style="display:inline-block; background:rgba(245,200,66,0.1); border:1px solid rgba(245,200,66,0.3); border-radius:6px; padding:4px 10px; margin:3px; font-size:0.85rem; color:var(--ouro)">🧤 ${g.nome} ${renderStars(g.nivel||1)}</span>`
+    ).join('');
+  } else {
+    divGol.style.display = 'none';
+  }
+
+  const times = sortearTimes(eventoAtivo, n);
+  const resultado = document.getElementById('timesResultado');
+
+  if (times === null) {
+    resultado.innerHTML = '<div class="section" style="text-align:center; color:#f87171">⚠️ Jogadores insuficientes para sortear!</div>';
+    return;
+  }
+  if (times.length === 0) { showToast('⚠️ Sem jogadores!'); return; }
+
+  resultado.innerHTML = times.map(t => `
+    <div class="time-card">
+      <div class="time-header" style="background:${t.cor}">${t.nome}</div>
+      <div class="time-body">
+        ${t.jogadores.map(j => `
+          <div class="time-player">
+            ${renderStars(j.nivel||1)}
+            <span>${j.nome}</span>
+          </div>
+        `).join('')}
+        <div style="font-size:0.7rem; color:rgba(255,255,255,0.35); margin-top:6px; padding-top:6px; border-top:1px solid rgba(255,255,255,0.06)">
+          ${t.jogadores.length} jogador${t.jogadores.length !== 1 ? 'es' : ''}
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  showToast('🎲 Times sorteados!');
+}
+
+/* ─── Start ─── */
+init();
+</script>
+</body>
+</html>

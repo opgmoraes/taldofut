@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lista de Fut ⚽</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px 16px;
+    }
+
+    .home-wrap {
+      width: 100%;
+      max-width: 440px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .home-ball {
+      font-size: 5rem;
+      display: block;
+      margin-bottom: 8px;
+      animation: spin 8s linear infinite;
+      filter: drop-shadow(0 0 24px rgba(57,224,122,0.3));
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    .home-title {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 3.5rem;
+      letter-spacing: 4px;
+      color: var(--branco);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .home-sub {
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 48px;
+    }
+
+    .home-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .home-card {
+      background: var(--cinza-esc);
+      border: 1px solid var(--cinza);
+      border-radius: 16px;
+      padding: 28px 24px;
+      text-decoration: none;
+      color: var(--branco);
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      transition: all 0.2s;
+      text-align: left;
+    }
+
+    .home-card:hover {
+      border-color: var(--verde-neon);
+      background: rgba(57,224,122,0.05);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+
+    .home-card-icon {
+      font-size: 2.8rem;
+      flex-shrink: 0;
+      filter: drop-shadow(0 0 8px rgba(57,224,122,0.2));
+    }
+
+    .home-card-title {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 1.6rem;
+      letter-spacing: 2px;
+      margin-bottom: 4px;
+    }
+
+    .home-card-desc {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.4);
+      line-height: 1.5;
+    }
+
+    .home-card.card-admin { border-color: rgba(57,224,122,0.25); }
+    .home-card.card-admin .home-card-title { color: var(--verde-neon); }
+
+    .home-card.card-jogador { border-color: rgba(245,200,66,0.2); }
+    .home-card.card-jogador .home-card-title { color: var(--ouro); }
+    .home-card.card-jogador:hover { border-color: var(--ouro); background: rgba(245,200,66,0.04); }
+
+    .arrow {
+      margin-left: auto;
+      font-size: 1.4rem;
+      color: rgba(255,255,255,0.2);
+      transition: color 0.2s, transform 0.2s;
+    }
+    .home-card:hover .arrow {
+      color: rgba(255,255,255,0.6);
+      transform: translateX(4px);
+    }
+
+    .home-footer {
+      margin-top: 36px;
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.2);
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="home-wrap">
+  <span class="home-ball">⚽</span>
+  <h1 class="home-title">Lista de Fut</h1>
+  <p class="home-sub">Organize seu jogo entre amigos</p>
+
+  <div class="home-cards">
+
+    <a href="admin.html" class="home-card card-admin">
+      <span class="home-card-icon">🛠</span>
+      <div>
+        <div class="home-card-title">Painel Admin</div>
+        <div class="home-card-desc">Crie eventos, gerencie jogadores,<br>confirme pagamentos e sorteie times.</div>
+      </div>
+      <span class="arrow">→</span>
+    </a>
+
+    <a href="lista.html" class="home-card card-jogador">
+      <span class="home-card-icon">👟</span>
+      <div>
+        <div class="home-card-title">Área do Jogador</div>
+        <div class="home-card-desc">Entre na lista com seu nome e nível.<br>(Use o link enviado pelo organizador.)</div>
+      </div>
+      <span class="arrow">→</span>
+    </a>
+
+  </div>
+
+  <p class="home-footer">Todos os dados ficam no seu navegador · localStorage</p>
+</div>
+
+</body>
+</html>

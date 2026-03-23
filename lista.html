@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lista de Fut ⚽</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── Star selector ── */
+    .star-selector-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .star-selector-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+    }
+    .star-selector {
+      display: flex;
+      gap: 4px;
+    }
+    .star-btn {
+      background: none;
+      border: none;
+      font-size: 1.6rem;
+      cursor: pointer;
+      color: rgba(255,255,255,0.15);
+      transition: color 0.15s, transform 0.15s;
+      padding: 0;
+      line-height: 1;
+    }
+    .star-btn.active {
+      color: var(--ouro);
+      text-shadow: 0 0 8px rgba(245,200,66,0.6);
+    }
+    .star-btn:hover { transform: scale(1.25); }
+
+    /* ── Player item own ── */
+    .player-item.proprio {
+      border-color: rgba(57,224,122,0.35);
+      background: rgba(57,224,122,0.05);
+    }
+
+    /* ── Hero do evento ── */
+    .evento-hero {
+      background: linear-gradient(135deg, rgba(26,122,60,0.3) 0%, rgba(13,13,13,0) 70%);
+      border: 1px solid rgba(57,224,122,0.2);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .evento-hero::before {
+      content: '⚽';
+      position: absolute;
+      right: -10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 7rem;
+      opacity: 0.06;
+      pointer-events: none;
+    }
+    .evento-hero h2 {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 2rem;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+      color: var(--branco);
+    }
+
+    /* ── Posição do jogador na lista ── */
+    .meu-nome-tag {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--verde-neon);
+      margin-left: 4px;
+    }
+
+    /* ── Alerta erro ── */
+    .alert {
+      background: rgba(229,62,62,0.1);
+      border: 1px solid rgba(229,62,62,0.3);
+      border-radius: 8px;
+      padding: 16px;
+      color: #f87171;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <span class="header-icon">⚽</span>
+  <div>
+    <h1>Lista de Fut</h1>
+    <p>Área do Jogador</p>
+  </div>
+  <span class="header-badge">Jogador</span>
+</header>
+
+<div class="container">
+
+  <!-- Sem evento -->
+  <div id="semEvento" style="display:none">
+    <div class="alert">
+      <div style="font-size:2rem; margin-bottom:8px">😕</div>
+      <strong>Link inválido ou evento não encontrado.</strong><br>
+      Peça ao organizador um link válido.
+    </div>
+  </div>
+
+  <!-- Conteúdo do evento -->
+  <div id="conteudo" style="display:none">
+
+    <!-- Hero -->
+    <div class="evento-hero">
+      <h2 id="evNome">—</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-item-label">📅 Data</div>
+          <div class="info-item-value" id="evData">—</div>
+        </div>
+        <div class="info-item">
+          <div class="info-item-label">📍 Local</div>
+          <div class="info-item-value" id="evLocal">—</div>
+        </div>
+        <div class="info-item" style="grid-column: span 2">
+          <div class="info-item-label">💰 Valor por pessoa</div>
+          <div class="info-item-value destaque" id="evValor">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats (somente leitura) -->
+    <div class="stats-bar" style="margin-bottom:20px">
+      <div class="stat-card">
+        <div class="stat-number" id="statTotal">0</div>
+        <div class="stat-label">Na lista</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="statGoleiros">0</div>
+        <div class="stat-label">Goleiros</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="statLinha">0</div>
+        <div class="stat-label">Linha</div>
+      </div>
+    </div>
+
+    <!-- Entrar na lista -->
+    <div class="section" id="secaoEntrar">
+      <div class="section-title">✍️ Entrar na Lista</div>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="field-group">
+          <label>Seu nome</label>
+          <input type="text" id="nomeInput" placeholder="Como quer ser chamado?" />
+        </div>
+
+        <!-- Seletor de estrelas -->
+        <div class="star-selector-wrap">
+          <div class="star-selector-label">Seu nível ⭐</div>
+          <div class="star-selector" id="starSelector">
+            <button class="star-btn active" data-n="1" onclick="selecionarNivel(1)" title="Iniciante">★</button>
+            <button class="star-btn" data-n="2" onclick="selecionarNivel(2)" title="Intermediário">★</button>
+            <button class="star-btn" data-n="3" onclick="selecionarNivel(3)" title="Avançado">★</button>
+          </div>
+          <div id="nivelLabel" style="font-size:0.78rem; color:rgba(255,255,255,0.4); margin-top:2px">⭐ Iniciante</div>
+        </div>
+
+        <button class="btn btn-primary btn-full" onclick="entrarNaLista()">
+          ⚽ Entrar na Lista
+        </button>
+      </div>
+    </div>
+
+    <!-- Já está na lista -->
+    <div id="secaoJaSou" style="display:none" class="section">
+      <div style="text-align:center; padding: 8px 0">
+        <div style="font-size:1.8rem; margin-bottom:8px">✅</div>
+        <p style="font-weight:700; color:var(--verde-neon)">Você está na lista!</p>
+        <p style="font-size:0.85rem; color:rgba(255,255,255,0.4); margin:4px 0 12px">Nome: <strong id="meuNomeExibido"></strong></p>
+        <button class="btn btn-danger btn-sm" onclick="sairDaLista()">❌ Sair da lista</button>
+      </div>
+    </div>
+
+    <!-- Lista de jogadores -->
+    <div class="section">
+      <div class="section-title">👥 Jogadores Confirmados</div>
+      <div id="playerList">
+        <div class="empty-state"><div class="emoji">👥</div><p>Nenhum jogador ainda.<br>Seja o primeiro!</p></div>
+      </div>
+    </div>
+
+  </div><!-- /conteudo -->
+
+</div><!-- /container -->
+
+<script src="script.js"></script>
+<script>
+/* ─── Estado ─── */
+let eventoId   = null;
+let meuNome    = null;
+let nivelEscolhido = 1;
+
+const NIVEL_LABELS = { 1: '⭐ Iniciante', 2: '⭐⭐ Intermediário', 3: '⭐⭐⭐ Avançado' };
+
+/* ─── Init ─── */
+function init() {
+  eventoId = getParam('id');
+
+  if (!eventoId) { mostrarErro(); return; }
+
+  const evt = getEvent(eventoId);
+  if (!evt) { mostrarErro(); return; }
+
+  // Recupera nome salvo
+  meuNome = localStorage.getItem('meuNome_' + eventoId) || null;
+
+  mostrarEvento(evt);
+  renderTudo();
+
+  // Atualiza a cada 10s (outros jogadores podem entrar)
+  setInterval(() => renderTudo(), 10000);
+}
+
+function mostrarErro() {
+  document.getElementById('semEvento').style.display = 'block';
+}
+
+function mostrarEvento(evt) {
+  document.getElementById('conteudo').style.display = 'block';
+  document.getElementById('evNome').textContent = evt.nome;
+  document.getElementById('evData').textContent = evt.data
+    ? new Date(evt.data + 'T12:00:00').toLocaleDateString('pt-BR', { weekday:'long', day:'numeric', month:'long' })
+    : '—';
+  document.getElementById('evLocal').textContent = evt.local || '—';
+  document.getElementById('evValor').textContent = evt.valor ? formatBRL(evt.valor) : 'A definir';
+}
+
+/* ─── Seletor de nível ─── */
+function selecionarNivel(n) {
+  nivelEscolhido = n;
+  document.querySelectorAll('#starSelector .star-btn').forEach(btn => {
+    btn.classList.toggle('active', parseInt(btn.dataset.n) <= n);
+  });
+  document.getElementById('nivelLabel').textContent = NIVEL_LABELS[n] || '';
+}
+
+/* ─── Entrar na lista ─── */
+function entrarNaLista() {
+  const nome = document.getElementById('nomeInput').value.trim();
+  if (!nome) { showToast('⚠️ Digite seu nome!'); return; }
+
+  const res = addPlayer(eventoId, nome, nivelEscolhido);
+  if (res === 'duplicado') { showToast('⚠️ Esse nome já está na lista!'); return; }
+  if (!res) { showToast('⚠️ Nome inválido.'); return; }
+
+  meuNome = nome;
+  localStorage.setItem('meuNome_' + eventoId, nome);
+  document.getElementById('nomeInput').value = '';
+  renderTudo();
+  showToast('✅ Você entrou na lista!');
+}
+
+/* ─── Sair da lista ─── */
+function sairDaLista() {
+  if (!meuNome) return;
+  if (!confirm('Deseja sair da lista?')) return;
+  removePlayer(eventoId, meuNome);
+  meuNome = null;
+  localStorage.removeItem('meuNome_' + eventoId);
+  renderTudo();
+  showToast('👋 Você saiu da lista.');
+}
+
+/* ─── Render ─── */
+function renderTudo() {
+  const evt = getEvent(eventoId);
+  if (!evt) return;
+
+  // Stats
+  const goleiros = evt.jogadores.filter(j => j.goleiro).length;
+  document.getElementById('statTotal').textContent    = evt.jogadores.length;
+  document.getElementById('statGoleiros').textContent = goleiros;
+  document.getElementById('statLinha').textContent    = evt.jogadores.length - goleiros;
+
+  // Seção entrar / já estou
+  const estouNaLista = meuNome && evt.jogadores.some(j => j.nome === meuNome);
+  document.getElementById('secaoEntrar').style.display = estouNaLista ? 'none' : 'block';
+  document.getElementById('secaoJaSou').style.display  = estouNaLista ? 'block' : 'none';
+  if (estouNaLista) {
+    document.getElementById('meuNomeExibido').textContent = meuNome;
+  }
+
+  // Lista
+  const container = document.getElementById('playerList');
+  if (evt.jogadores.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="emoji">👥</div><p>Nenhum jogador ainda.<br>Seja o primeiro!</p></div>';
+    return;
+  }
+
+  container.innerHTML = evt.jogadores.map((j, i) => {
+    const isEu = j.nome === meuNome;
+    return `
+      <div class="player-item ${isEu ? 'proprio' : ''}">
+        <span class="player-number">${i + 1}</span>
+        <span class="player-name">
+          ${j.nome}
+          ${isEu ? '<span class="meu-nome-tag">← você</span>' : ''}
+        </span>
+
+        <!-- Estrelas (somente leitura) -->
+        <div class="player-stars">${renderStars(j.nivel || 1)}</div>
+
+        ${j.goleiro ? '<span class="badge badge-goleiro">🧤 Goleiro</span>' : ''}
+
+        <!-- Só exibe status de pagamento de forma neutra -->
+        <span class="badge ${j.pago ? 'badge-pago' : 'badge-pendente'}">
+          ${j.pago ? '✅ Pago' : '⏳ Pendente'}
+        </span>
+
+        <!-- Jogador só pode remover a si mesmo -->
+        ${isEu ? `<button class="btn btn-danger btn-sm" onclick="sairDaLista()">❌ Sair</button>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+/* ─── Start ─── */
+init();
+</script>
+</body>
+</html>
