@@ -1,338 +1,494 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lista de Fut ⚽</title>
-  <link rel="stylesheet" href="style.css" />
-  <style>
-    /* ── Star selector ── */
-    .star-selector-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .star-selector-label {
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.4);
-    }
-    .star-selector {
-      display: flex;
-      gap: 4px;
-    }
-    .star-btn {
-      background: none;
-      border: none;
-      font-size: 1.6rem;
-      cursor: pointer;
-      color: rgba(255,255,255,0.15);
-      transition: color 0.15s, transform 0.15s;
-      padding: 0;
-      line-height: 1;
-    }
-    .star-btn.active {
-      color: var(--ouro);
-      text-shadow: 0 0 8px rgba(245,200,66,0.6);
-    }
-    .star-btn:hover { transform: scale(1.25); }
-
-    /* ── Player item own ── */
-    .player-item.proprio {
-      border-color: rgba(57,224,122,0.35);
-      background: rgba(57,224,122,0.05);
-    }
-
-    /* ── Hero do evento ── */
-    .evento-hero {
-      background: linear-gradient(135deg, rgba(26,122,60,0.3) 0%, rgba(13,13,13,0) 70%);
-      border: 1px solid rgba(57,224,122,0.2);
-      border-radius: var(--radius);
-      padding: 24px;
-      margin-bottom: 20px;
-      position: relative;
-      overflow: hidden;
-    }
-    .evento-hero::before {
-      content: '⚽';
-      position: absolute;
-      right: -10px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 7rem;
-      opacity: 0.06;
-      pointer-events: none;
-    }
-    .evento-hero h2 {
-      font-family: 'Bebas Neue', cursive;
-      font-size: 2rem;
-      letter-spacing: 2px;
-      margin-bottom: 12px;
-      color: var(--branco);
-    }
-
-    /* ── Posição do jogador na lista ── */
-    .meu-nome-tag {
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      color: var(--verde-neon);
-      margin-left: 4px;
-    }
-
-    /* ── Alerta erro ── */
-    .alert {
-      background: rgba(229,62,62,0.1);
-      border: 1px solid rgba(229,62,62,0.3);
-      border-radius: 8px;
-      padding: 16px;
-      color: #f87171;
-      text-align: center;
-    }
-  </style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Tal do Fut — Lista ⚽</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 </head>
 <body>
 
-<header class="header">
-  <span class="header-icon">⚽</span>
-  <div>
-    <h1>Lista de Fut</h1>
-    <p>Área do Jogador</p>
-  </div>
-  <span class="header-badge">Jogador</span>
-</header>
+<div id="loadingOverlay" style="display:none">
+  <div class="spinner"></div>
+  <span class="loading-txt">Carregando...</span>
+</div>
 
-<div class="container">
-
-  <!-- Sem evento -->
-  <div id="semEvento" style="display:none">
-    <div class="alert">
-      <div style="font-size:2rem; margin-bottom:8px">😕</div>
-      <strong>Link inválido ou evento não encontrado.</strong><br>
-      Peça ao organizador um link válido.
+<!-- Tela de erro -->
+<div id="telaErro" style="display:none">
+  <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;position:relative;z-index:1">
+    <div class="section" style="max-width:380px;text-align:center">
+      <div style="font-size:3rem;margin-bottom:12px">😕</div>
+      <strong>Link inválido ou evento não encontrado.</strong>
+      <p style="font-size:0.85rem;color:rgba(255,255,255,0.4);margin-top:8px">Peça ao organizador um link válido.</p>
+      <a href="index.html" class="btn btn-outline" style="margin-top:16px">← Início</a>
     </div>
   </div>
+</div>
 
-  <!-- Conteúdo do evento -->
-  <div id="conteudo" style="display:none">
+<!-- Conteúdo principal -->
+<div id="telaConteudo" style="display:none">
 
-    <!-- Hero -->
+  <header class="header">
+    <span class="header-icon">⚽</span>
+    <div>
+      <h1 id="headerNome">Tal do Fut</h1>
+      <p>Área do Jogador</p>
+    </div>
+    <span class="header-badge" id="headerBadge">—</span>
+  </header>
+
+  <div class="container">
+
+    <!-- Hero do evento -->
     <div class="evento-hero">
       <h2 id="evNome">—</h2>
+      <div id="countdown" class="countdown" style="display:none"></div>
       <div class="info-grid">
-        <div class="info-item">
-          <div class="info-item-label">📅 Data</div>
-          <div class="info-item-value" id="evData">—</div>
-        </div>
-        <div class="info-item">
-          <div class="info-item-label">📍 Local</div>
-          <div class="info-item-value" id="evLocal">—</div>
-        </div>
-        <div class="info-item" style="grid-column: span 2">
-          <div class="info-item-label">💰 Valor por pessoa</div>
-          <div class="info-item-value destaque" id="evValor">—</div>
-        </div>
+        <div class="info-item"><div class="info-label">📅 Data</div><div class="info-value" id="evData">—</div></div>
+        <div class="info-item"><div class="info-label">⏰ Horário</div><div class="info-value" id="evHora">—</div></div>
+        <div class="info-item"><div class="info-label">📍 Local</div><div class="info-value" id="evLocal">—</div></div>
+        <div class="info-item"><div class="info-label">💰 Valor</div><div class="info-value neon" id="evValor">—</div></div>
       </div>
     </div>
 
-    <!-- Stats (somente leitura) -->
-    <div class="stats-bar" style="margin-bottom:20px">
-      <div class="stat-card">
-        <div class="stat-number" id="statTotal">0</div>
-        <div class="stat-label">Na lista</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number" id="statGoleiros">0</div>
-        <div class="stat-label">Goleiros</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number" id="statLinha">0</div>
-        <div class="stat-label">Linha</div>
-      </div>
+    <!-- Stats -->
+    <div class="stats-bar">
+      <div class="stat-card"><div class="stat-number" id="sTotal">0</div><div class="stat-label">Na lista</div></div>
+      <div class="stat-card"><div class="stat-number" id="sGoleiros">0</div><div class="stat-label">Goleiros</div></div>
+      <div class="stat-card"><div class="stat-number" id="sLinha">0</div><div class="stat-label">Linha</div></div>
+      <div class="stat-card"><div class="stat-number" id="sPagaram">0</div><div class="stat-label">Pagaram</div></div>
     </div>
 
-    <!-- Entrar na lista -->
-    <div class="section" id="secaoEntrar">
-      <div class="section-title">✍️ Entrar na Lista</div>
-      <div style="display:flex; flex-direction:column; gap:12px;">
-        <div class="field-group">
-          <label>Seu nome</label>
-          <input type="text" id="nomeInput" placeholder="Como quer ser chamado?" />
+    <!-- Alerta poucos jogadores -->
+    <div id="alertaPoucos" class="alerta alerta-warn" style="display:none;margin-bottom:16px"></div>
+
+    <!-- Tabs -->
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="tabJ('tab-entrar',this)">✍️ Entrar</button>
+      <button class="tab-btn" onclick="tabJ('tab-lista',this)">👥 Lista</button>
+      <button class="tab-btn" onclick="tabJ('tab-times',this)">🎲 Times</button>
+      <button class="tab-btn" onclick="tabJ('tab-pix',this)">💰 Pix</button>
+    </div>
+
+    <!-- ── TAB ENTRAR ── -->
+    <div id="tab-entrar" class="tab-panel active">
+
+      <!-- Já está na lista -->
+      <div id="secaoJaSou" style="display:none" class="section">
+        <div style="text-align:center;padding:8px 0 16px">
+          <div style="font-size:2.2rem;margin-bottom:8px">✅</div>
+          <p style="font-weight:700;color:var(--neon);font-size:1.1rem">Você está na lista!</p>
+          <p style="font-size:0.85rem;color:rgba(255,255,255,0.4);margin:6px 0 0">Nome: <strong id="meuNomeExibido"></strong></p>
         </div>
 
-        <!-- Seletor de estrelas -->
-        <div class="star-selector-wrap">
-          <div class="star-selector-label">Seu nível ⭐</div>
-          <div class="star-selector" id="starSelector">
-            <button class="star-btn active" data-n="1" onclick="selecionarNivel(1)" title="Iniciante">★</button>
-            <button class="star-btn" data-n="2" onclick="selecionarNivel(2)" title="Intermediário">★</button>
-            <button class="star-btn" data-n="3" onclick="selecionarNivel(3)" title="Avançado">★</button>
+        <!-- Confirmar presença -->
+        <div class="divider"></div>
+        <div style="text-align:center">
+          <div style="font-size:0.78rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:12px">Sua presença</div>
+          <div style="display:flex;gap:10px;justify-content:center">
+            <button class="btn btn-primary" id="btnConfirmar" onclick="confirmarPresenca(true)">✅ Confirmado</button>
+            <button class="btn btn-danger" id="btnRecusar" onclick="confirmarPresenca(false)">❌ Não vou</button>
           </div>
-          <div id="nivelLabel" style="font-size:0.78rem; color:rgba(255,255,255,0.4); margin-top:2px">⭐ Iniciante</div>
+          <div id="statusPresenca" style="margin-top:10px;font-size:0.85rem;color:rgba(255,255,255,0.4)"></div>
         </div>
 
-        <button class="btn btn-primary btn-full" onclick="entrarNaLista()">
-          ⚽ Entrar na Lista
-        </button>
+        <div class="divider"></div>
+        <button class="btn btn-danger btn-sm btn-full" onclick="sairDaLista()">❌ Sair da lista</button>
+      </div>
+
+      <!-- Cadastro -->
+      <div id="secaoEntrar" class="section">
+        <div class="section-title">✍️ Entrar na Lista</div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="field-group">
+            <label>Seu nome</label>
+            <input type="text" id="nomeInput" placeholder="Como quer ser chamado?"
+              onkeydown="if(event.key==='Enter') entrarNaLista()"/>
+          </div>
+
+          <!-- Nível -->
+          <div>
+            <div style="font-size:0.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:6px">Seu nível ⭐</div>
+            <div class="star-selector" id="starSel">
+              <button class="star-btn active" data-n="1" onclick="selNivel(1)" title="Iniciante">★</button>
+              <button class="star-btn" data-n="2" onclick="selNivel(2)" title="Intermediário">★</button>
+              <button class="star-btn" data-n="3" onclick="selNivel(3)" title="Avançado">★</button>
+            </div>
+            <div class="nivel-label" id="nivelLabel">⭐ Iniciante</div>
+          </div>
+
+          <!-- É goleiro? -->
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;background:var(--c2);border:1px solid var(--c3);border-radius:10px;padding:14px">
+            <input type="checkbox" id="isGoleiro" style="width:18px;height:18px;accent-color:var(--ouro)"/>
+            <div>
+              <div style="font-weight:700">🧤 Sou goleiro</div>
+              <div style="font-size:0.78rem;color:rgba(255,255,255,0.4)">Goleiros não participam do sorteio de linha</div>
+            </div>
+          </label>
+
+          <button class="btn btn-primary btn-full" onclick="entrarNaLista()">⚽ Entrar na Lista</button>
+        </div>
       </div>
     </div>
 
-    <!-- Já está na lista -->
-    <div id="secaoJaSou" style="display:none" class="section">
-      <div style="text-align:center; padding: 8px 0">
-        <div style="font-size:1.8rem; margin-bottom:8px">✅</div>
-        <p style="font-weight:700; color:var(--verde-neon)">Você está na lista!</p>
-        <p style="font-size:0.85rem; color:rgba(255,255,255,0.4); margin:4px 0 12px">Nome: <strong id="meuNomeExibido"></strong></p>
-        <button class="btn btn-danger btn-sm" onclick="sairDaLista()">❌ Sair da lista</button>
+    <!-- ── TAB LISTA ── -->
+    <div id="tab-lista" class="tab-panel">
+      <div class="section">
+        <div class="section-title">👥 Jogadores Confirmados</div>
+        <div id="playerList" class="player-list">
+          <div class="empty-state"><span class="emoji">👥</span><p>Nenhum jogador ainda.</p></div>
+        </div>
       </div>
     </div>
 
-    <!-- Lista de jogadores -->
-    <div class="section">
-      <div class="section-title">👥 Jogadores Confirmados</div>
-      <div id="playerList">
-        <div class="empty-state"><div class="emoji">👥</div><p>Nenhum jogador ainda.<br>Seja o primeiro!</p></div>
+    <!-- ── TAB TIMES ── -->
+    <div id="tab-times" class="tab-panel">
+      <div id="semTimes" class="section" style="text-align:center;padding:32px">
+        <div style="font-size:2.5rem;margin-bottom:10px">⏳</div>
+        <p style="color:rgba(255,255,255,0.4)">O organizador ainda não sorteoou os times.</p>
+        <p style="font-size:0.8rem;color:rgba(255,255,255,0.25);margin-top:4px">Aguarde e recarregue a página.</p>
+      </div>
+      <div id="timesPublicados" style="display:none">
+        <div class="alerta alerta-ok" style="margin-bottom:14px">🎲 Times sorteados pelo organizador!</div>
+        <div id="timesGrid" class="times-grid"></div>
+        <div id="goleirosSection" style="display:none;margin-top:14px"></div>
       </div>
     </div>
 
-  </div><!-- /conteudo -->
+    <!-- ── TAB PIX ── -->
+    <div id="tab-pix" class="tab-panel">
+      <div id="semPix" class="section" style="text-align:center;padding:32px">
+        <div style="font-size:2.5rem;margin-bottom:10px">💳</div>
+        <p style="color:rgba(255,255,255,0.4)">O organizador ainda não configurou o Pix.</p>
+      </div>
+      <div id="pixSection" class="section" style="display:none">
+        <div class="section-title">💰 Pagamento via Pix</div>
+        <div class="pix-box">
+          <canvas id="qrCanvasJogador"></canvas>
+          <div class="pix-chave" id="pixInfoJogador"></div>
+          <p style="font-size:0.8rem;color:rgba(255,255,255,0.35);margin-top:10px">
+            Aponte a câmera do seu banco para o QR Code
+          </p>
+        </div>
+      </div>
+    </div>
 
-</div><!-- /container -->
+  </div><!-- /container -->
+</div><!-- /telaConteudo -->
 
-<script src="script.js"></script>
+<script src="supabase.js"></script>
 <script>
-/* ─── Estado ─── */
-let eventoId   = null;
-let meuNome    = null;
-let nivelEscolhido = 1;
+/* ═══════════════════════════════════════
+   ESTADO
+   ═══════════════════════════════════════ */
+let eventoId    = null;
+let meuId       = null; // id do jogador no banco
+let meuNome     = null;
+let nivelSel    = 1;
+let jogadores   = [];
+let evtData     = null;
+let realtimeSub = null;
+let countdownTimer = null;
 
-const NIVEL_LABELS = { 1: '⭐ Iniciante', 2: '⭐⭐ Intermediário', 3: '⭐⭐⭐ Avançado' };
+const NIVEL_LABELS = { 1:'⭐ Iniciante', 2:'⭐⭐ Intermediário', 3:'⭐⭐⭐ Avançado' };
 
-/* ─── Init ─── */
-function init() {
+/* ═══════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════ */
+async function init() {
   eventoId = getParam('id');
+  if (!eventoId) { document.getElementById('telaErro').style.display='block'; return; }
 
-  if (!eventoId) { mostrarErro(); return; }
+  setLoading(true);
+  const { data: evt, error } = await getEvento(eventoId);
+  setLoading(false);
 
-  const evt = getEvent(eventoId);
-  if (!evt) { mostrarErro(); return; }
+  if (error||!evt) { document.getElementById('telaErro').style.display='block'; return; }
+  evtData = evt;
 
-  // Recupera nome salvo
-  meuNome = localStorage.getItem('meuNome_' + eventoId) || null;
+  // Recupera identidade salva
+  meuNome = localStorage.getItem('meuNome_'+eventoId) || null;
+  meuId   = localStorage.getItem('meuId_'+eventoId)   || null;
 
   mostrarEvento(evt);
-  renderTudo();
+  document.getElementById('telaConteudo').style.display = 'block';
+  await renderTudo();
 
-  // Atualiza a cada 10s (outros jogadores podem entrar)
-  setInterval(() => renderTudo(), 10000);
-}
+  // Realtime
+  realtimeSub = subscreverEvento(eventoId, () => renderTudo());
 
-function mostrarErro() {
-  document.getElementById('semEvento').style.display = 'block';
+  // Countdown
+  if (evt.data && evt.hora) iniciarCountdown(evt.data, evt.hora);
 }
 
 function mostrarEvento(evt) {
-  document.getElementById('conteudo').style.display = 'block';
-  document.getElementById('evNome').textContent = evt.nome;
-  document.getElementById('evData').textContent = evt.data
-    ? new Date(evt.data + 'T12:00:00').toLocaleDateString('pt-BR', { weekday:'long', day:'numeric', month:'long' })
+  document.title = evt.nome + ' ⚽';
+  document.getElementById('headerNome').textContent = evt.nome;
+  document.getElementById('evNome').textContent     = evt.nome;
+  document.getElementById('evLocal').textContent    = evt.local || '—';
+  document.getElementById('evHora').textContent     = evt.hora  || '—';
+  document.getElementById('evData').textContent     = evt.data
+    ? new Date(evt.data+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})
     : '—';
-  document.getElementById('evLocal').textContent = evt.local || '—';
-  document.getElementById('evValor').textContent = evt.valor ? formatBRL(evt.valor) : 'A definir';
+  document.getElementById('evValor').textContent    = evt.valor ? formatBRL(evt.valor) : 'A definir';
 }
 
-/* ─── Seletor de nível ─── */
-function selecionarNivel(n) {
-  nivelEscolhido = n;
-  document.querySelectorAll('#starSelector .star-btn').forEach(btn => {
-    btn.classList.toggle('active', parseInt(btn.dataset.n) <= n);
-  });
-  document.getElementById('nivelLabel').textContent = NIVEL_LABELS[n] || '';
+/* ═══════════════════════════════════════
+   TABS
+   ═══════════════════════════════════════ */
+function tabJ(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  if (id==='tab-times') renderTimes();
+  if (id==='tab-pix')   renderPix();
 }
 
-/* ─── Entrar na lista ─── */
-function entrarNaLista() {
-  const nome = document.getElementById('nomeInput').value.trim();
-  if (!nome) { showToast('⚠️ Digite seu nome!'); return; }
+/* ═══════════════════════════════════════
+   SELETOR NÍVEL
+   ═══════════════════════════════════════ */
+function selNivel(n) {
+  nivelSel = n;
+  document.querySelectorAll('#starSel .star-btn').forEach(b=>b.classList.toggle('active',parseInt(b.dataset.n)<=n));
+  document.getElementById('nivelLabel').textContent = NIVEL_LABELS[n]||'';
+}
 
-  const res = addPlayer(eventoId, nome, nivelEscolhido);
-  if (res === 'duplicado') { showToast('⚠️ Esse nome já está na lista!'); return; }
-  if (!res) { showToast('⚠️ Nome inválido.'); return; }
+/* ═══════════════════════════════════════
+   ENTRAR / SAIR
+   ═══════════════════════════════════════ */
+async function entrarNaLista() {
+  const nome    = document.getElementById('nomeInput').value.trim();
+  const goleiro = document.getElementById('isGoleiro').checked;
+  if (!nome) { showToast('⚠️ Digite seu nome!','warn'); return; }
+
+  setLoading(true,'Entrando...');
+  const { data, error } = await adicionarJogador(eventoId, nome, nivelSel, goleiro);
+  setLoading(false);
+
+  if (error?.message==='duplicado') { showToast('⚠️ Esse nome já está na lista!','warn'); return; }
+  if (error) { showToast('Erro: '+error.message,'erro'); return; }
 
   meuNome = nome;
-  localStorage.setItem('meuNome_' + eventoId, nome);
+  meuId   = data.id;
+  localStorage.setItem('meuNome_'+eventoId, nome);
+  localStorage.setItem('meuId_'+eventoId,   data.id);
   document.getElementById('nomeInput').value = '';
-  renderTudo();
-  showToast('✅ Você entrou na lista!');
+  await renderTudo();
+  showToast('✅ Você entrou na lista!','ok');
 }
 
-/* ─── Sair da lista ─── */
-function sairDaLista() {
-  if (!meuNome) return;
-  if (!confirm('Deseja sair da lista?')) return;
-  removePlayer(eventoId, meuNome);
-  meuNome = null;
-  localStorage.removeItem('meuNome_' + eventoId);
-  renderTudo();
-  showToast('👋 Você saiu da lista.');
+async function sairDaLista() {
+  if (!meuId||!confirm('Deseja sair da lista?')) return;
+  setLoading(true);
+  await removerJogador(meuId);
+  meuNome = null; meuId = null;
+  localStorage.removeItem('meuNome_'+eventoId);
+  localStorage.removeItem('meuId_'+eventoId);
+  setLoading(false);
+  await renderTudo();
+  showToast('👋 Você saiu da lista.','ok');
 }
 
-/* ─── Render ─── */
-function renderTudo() {
-  const evt = getEvent(eventoId);
-  if (!evt) return;
+async function confirmarPresenca(confirmado) {
+  if (!meuId) return;
+  setLoading(true);
+  await atualizarJogador(meuId, { confirmado });
+  setLoading(false);
+  const el = document.getElementById('statusPresenca');
+  el.textContent = confirmado ? '✅ Presença confirmada!' : '❌ Marcado como ausente.';
+  el.style.color = confirmado ? 'var(--neon)' : 'var(--vermelho)';
+  showToast(confirmado?'✅ Presença confirmada!':'❌ Ausência registrada.', confirmado?'ok':'warn');
+  await renderTudo();
+}
 
-  // Stats
-  const goleiros = evt.jogadores.filter(j => j.goleiro).length;
-  document.getElementById('statTotal').textContent    = evt.jogadores.length;
-  document.getElementById('statGoleiros').textContent = goleiros;
-  document.getElementById('statLinha').textContent    = evt.jogadores.length - goleiros;
+/* ═══════════════════════════════════════
+   RENDER PRINCIPAL
+   ═══════════════════════════════════════ */
+async function renderTudo() {
+  const { data } = await listarJogadores(eventoId);
+  jogadores = data || [];
 
-  // Seção entrar / já estou
-  const estouNaLista = meuNome && evt.jogadores.some(j => j.nome === meuNome);
-  document.getElementById('secaoEntrar').style.display = estouNaLista ? 'none' : 'block';
-  document.getElementById('secaoJaSou').style.display  = estouNaLista ? 'block' : 'none';
-  if (estouNaLista) {
-    document.getElementById('meuNomeExibido').textContent = meuNome;
+  // Verifica se eu ainda estou na lista
+  if (meuId && !jogadores.find(j=>j.id===meuId)) {
+    meuId = null; meuNome = null;
+    localStorage.removeItem('meuNome_'+eventoId);
+    localStorage.removeItem('meuId_'+eventoId);
   }
 
-  // Lista
+  renderStats();
+  renderEntrar();
+  renderListaJogadores();
+  checarAlerta();
+
+  // Atualiza dados do evento
+  const { data: evt } = await getEvento(eventoId);
+  if (evt) {
+    evtData = evt;
+    // Atualiza badge com total
+    document.getElementById('headerBadge').textContent = jogadores.length + ' jogadores';
+  }
+}
+
+function renderStats() {
+  const gol  = jogadores.filter(j=>j.goleiro).length;
+  const pag  = jogadores.filter(j=>j.pago).length;
+  document.getElementById('sTotal').textContent    = jogadores.length;
+  document.getElementById('sGoleiros').textContent = gol;
+  document.getElementById('sLinha').textContent    = jogadores.length - gol;
+  document.getElementById('sPagaram').textContent  = pag;
+}
+
+function renderEntrar() {
+  const estou = meuId && jogadores.find(j=>j.id===meuId);
+  document.getElementById('secaoEntrar').style.display = estou?'none':'block';
+  document.getElementById('secaoJaSou').style.display  = estou?'block':'none';
+  if (estou) {
+    document.getElementById('meuNomeExibido').textContent = meuNome||'';
+    const eu = jogadores.find(j=>j.id===meuId);
+    const sp = document.getElementById('statusPresenca');
+    if (eu) {
+      sp.textContent = eu.confirmado ? '✅ Presença confirmada' : '⏳ Presença pendente';
+      sp.style.color = eu.confirmado ? 'var(--neon)' : 'rgba(255,255,255,0.4)';
+    }
+  }
+}
+
+function renderListaJogadores() {
   const container = document.getElementById('playerList');
-  if (evt.jogadores.length === 0) {
-    container.innerHTML = '<div class="empty-state"><div class="emoji">👥</div><p>Nenhum jogador ainda.<br>Seja o primeiro!</p></div>';
+  if (!jogadores.length) {
+    container.innerHTML = '<div class="empty-state"><span class="emoji">👥</span><p>Nenhum jogador ainda.<br>Seja o primeiro!</p></div>';
     return;
   }
-
-  container.innerHTML = evt.jogadores.map((j, i) => {
-    const isEu = j.nome === meuNome;
+  container.innerHTML = jogadores.map((j,i)=>{
+    const isEu = j.id === meuId;
     return `
-      <div class="player-item ${isEu ? 'proprio' : ''}">
-        <span class="player-number">${i + 1}</span>
-        <span class="player-name">
-          ${j.nome}
-          ${isEu ? '<span class="meu-nome-tag">← você</span>' : ''}
-        </span>
-
-        <!-- Estrelas (somente leitura) -->
-        <div class="player-stars">${renderStars(j.nivel || 1)}</div>
-
-        ${j.goleiro ? '<span class="badge badge-goleiro">🧤 Goleiro</span>' : ''}
-
-        <!-- Só exibe status de pagamento de forma neutra -->
-        <span class="badge ${j.pago ? 'badge-pago' : 'badge-pendente'}">
-          ${j.pago ? '✅ Pago' : '⏳ Pendente'}
-        </span>
-
-        <!-- Jogador só pode remover a si mesmo -->
-        ${isEu ? `<button class="btn btn-danger btn-sm" onclick="sairDaLista()">❌ Sair</button>` : ''}
-      </div>
-    `;
+      <div class="player-item ${isEu?'proprio':''} ${!j.confirmado&&j.confirmado!==null?'nao-confirmado':''}">
+        <span class="player-num">${i+1}</span>
+        <span class="player-nome">${j.nome}${isEu?'<span class="meu-tag">← você</span>':''}</span>
+        <div class="player-stars">${renderStars(j.nivel||1)}</div>
+        ${j.goleiro?'<span class="badge badge-goleiro">🧤</span>':''}
+        <span class="badge ${j.pago?'badge-pago':'badge-pendente'}">${j.pago?'✅':'⏳'}</span>
+        ${isEu?`<button class="btn btn-danger btn-sm btn-icon" onclick="sairDaLista()">✕</button>`:''}
+      </div>`;
   }).join('');
 }
 
-/* ─── Start ─── */
+function checarAlerta() {
+  const min = evtData?.minimo_jogadores || 10;
+  const el  = document.getElementById('alertaPoucos');
+  if (jogadores.length < min) {
+    el.textContent = `⚠️ Poucos jogadores! ${jogadores.length} de ${min} recomendados. Chame mais amigos!`;
+    el.style.display = 'flex';
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+/* ═══════════════════════════════════════
+   TIMES PUBLICADOS
+   ═══════════════════════════════════════ */
+async function renderTimes() {
+  const { data: evt } = await getEvento(eventoId);
+  const semEl = document.getElementById('semTimes');
+  const pubEl = document.getElementById('timesPublicados');
+
+  if (!evt?.times_sorteados) {
+    semEl.style.display='block'; pubEl.style.display='none'; return;
+  }
+
+  semEl.style.display='none'; pubEl.style.display='block';
+
+  let times;
+  try { times = JSON.parse(evt.times_sorteados); } catch { return; }
+
+  document.getElementById('timesGrid').innerHTML = times.map(t=>`
+    <div class="time-card ${t.extra?'time-extra':''}">
+      <div class="time-header" style="background:${t.extra?'transparent':t.cor}">
+        <span>${t.nome}${t.extra?' (Extra)':''}</span>
+        <span class="stars-total">⭐ ${t.totalEstrelas}</span>
+      </div>
+      <div class="time-body">
+        ${t.jogadores.map(j=>`
+          <div class="time-player ${j.id===meuId?'proprio':''}">
+            ${renderStars(j.nivel||1)}
+            <span${j.id===meuId?' style="color:var(--neon);font-weight:700"':''}>${j.nome}${j.id===meuId?' ←':''}
+            </span>
+          </div>`).join('')}
+        <div class="time-qtd">${t.jogadores.length} jogador${t.jogadores.length!==1?'es':''}</div>
+      </div>
+    </div>
+  `).join('');
+
+  // Goleiros
+  const goleiros = jogadores.filter(j=>j.goleiro);
+  const gSec = document.getElementById('goleirosSection');
+  if (goleiros.length) {
+    gSec.style.display='block';
+    gSec.innerHTML = `<div class="goleiros-wrap">
+      <div class="goleiros-label">🧤 Goleiros</div>
+      ${goleiros.map(g=>`<span class="goleiro-chip">🧤 ${g.nome} ${renderStars(g.nivel||1)}</span>`).join('')}
+    </div>`;
+  }
+}
+
+/* ═══════════════════════════════════════
+   PIX
+   ═══════════════════════════════════════ */
+async function renderPix() {
+  const { data: evt } = await getEvento(eventoId);
+  const semEl = document.getElementById('semPix');
+  const pixEl = document.getElementById('pixSection');
+
+  if (!evt?.chave_pix) {
+    semEl.style.display='block'; pixEl.style.display='none'; return;
+  }
+
+  let pix;
+  try { pix = JSON.parse(evt.chave_pix); } catch { return; }
+
+  semEl.style.display='none'; pixEl.style.display='block';
+
+  document.getElementById('pixInfoJogador').textContent =
+    `${(pix.tipo||'').toUpperCase()}: ${pix.chave}${pix.nome?' · '+pix.nome:''}${pix.valor?' · '+formatBRL(pix.valor):''}`;
+
+  if (pix.pixStr) {
+    QRCode.toCanvas(document.getElementById('qrCanvasJogador'), pix.pixStr, {
+      width: 220, margin: 2,
+      color: { dark: '#000000', light: '#ffffff' }
+    });
+  }
+}
+
+/* ═══════════════════════════════════════
+   COUNTDOWN
+   ═══════════════════════════════════════ */
+function iniciarCountdown(data, hora) {
+  const alvo = new Date(`${data}T${hora||'00:00'}:00`);
+  const el   = document.getElementById('countdown');
+
+  function atualizar() {
+    const diff = alvo - Date.now();
+    if (diff <= 0) { el.style.display='none'; clearInterval(countdownTimer); return; }
+    const d = Math.floor(diff/86400000);
+    const h = Math.floor((diff%86400000)/3600000);
+    const m = Math.floor((diff%3600000)/60000);
+    const s = Math.floor((diff%60000)/1000);
+    el.style.display='flex';
+    el.innerHTML = [
+      ['Dias',d],['Hrs',h],['Min',m],['Seg',s]
+    ].map(([l,v])=>`<div class="count-block"><div class="count-num">${String(v).padStart(2,'0')}</div><div class="count-lbl">${l}</div></div>`).join('');
+  }
+  atualizar();
+  countdownTimer = setInterval(atualizar, 1000);
+}
+
+/* ═══════════════════════════════════════
+   START
+   ═══════════════════════════════════════ */
 init();
 </script>
 </body>

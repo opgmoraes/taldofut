@@ -1,499 +1,838 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin — Lista de Fut ⚽</title>
-  <link rel="stylesheet" href="style.css" />
-  <style>
-    /* Extras específicos do admin */
-    .tab-bar {
-      display: flex;
-      gap: 4px;
-      background: var(--cinza-med);
-      border-radius: 10px;
-      padding: 4px;
-      margin-bottom: 20px;
-    }
-    .tab-btn {
-      flex: 1;
-      padding: 10px 8px;
-      border: none;
-      border-radius: 8px;
-      background: none;
-      color: rgba(255,255,255,0.45);
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 700;
-      font-size: 0.9rem;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: all 0.18s;
-    }
-    .tab-btn.active {
-      background: var(--cinza-esc);
-      color: var(--verde-neon);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    }
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
-
-    .evento-selector {
-      background: var(--cinza-med);
-      border: 1px solid rgba(57,224,122,0.3);
-      border-radius: var(--radius);
-      padding: 16px;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .evento-selector label {
-      font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.5);
-      white-space: nowrap;
-    }
-    .evento-selector select { flex: 1; min-width: 160px; }
-
-    .nivel-admin-row {
-      display: flex;
-      gap: 4px;
-      align-items: center;
-    }
-    .nivel-admin-btn {
-      background: none;
-      border: none;
-      font-size: 1.1rem;
-      cursor: pointer;
-      color: rgba(255,255,255,0.15);
-      transition: color 0.15s, transform 0.15s;
-      padding: 0 2px;
-      line-height: 1;
-    }
-    .nivel-admin-btn:hover { color: var(--ouro); transform: scale(1.2); }
-    .nivel-admin-btn.active { color: var(--ouro); }
-  </style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Admin — Tal do Fut ⚽</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>"/>
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- QR Code lib -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 </head>
 <body>
 
-<!-- Header -->
-<header class="header">
-  <span class="header-icon">⚽</span>
-  <div>
-    <h1>Lista de Fut</h1>
-    <p>Painel do Administrador</p>
-  </div>
-  <span class="header-badge">Admin</span>
-</header>
+<!-- Loading -->
+<div id="loadingOverlay" style="display:none">
+  <div class="spinner"></div>
+  <span class="loading-txt">Carregando...</span>
+</div>
 
-<div class="container">
+<!-- ══════════════════════════════════════
+     TELA DE AUTH
+     ══════════════════════════════════════ -->
+<div id="telaAuth">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <span class="ball">⚽</span>
+        <h1>TAL DO FUT</h1>
+        <p>PAINEL DO ADMINISTRADOR</p>
+      </div>
 
-  <!-- ── Seletor de evento ── -->
-  <div class="evento-selector">
-    <label>Evento ativo:</label>
-    <select id="eventoSelect" onchange="trocarEvento()">
-      <option value="">— Crie ou selecione um evento —</option>
-    </select>
-    <button class="btn btn-danger btn-sm" onclick="deletarEvento()" title="Excluir evento">🗑 Excluir</button>
-  </div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="authTab('login')">Entrar</button>
+        <button class="auth-tab" onclick="authTab('cadastro')">Cadastrar</button>
+      </div>
 
-  <!-- ── Tabs ── -->
-  <div class="tab-bar">
-    <button class="tab-btn active" onclick="abrirTab('tab-evento', this)">🗓 Evento</button>
-    <button class="tab-btn" onclick="abrirTab('tab-jogadores', this)">👥 Jogadores</button>
-    <button class="tab-btn" onclick="abrirTab('tab-sorteio', this)">🎲 Sorteio</button>
-  </div>
-
-  <!-- ══════════════════════════════════
-       TAB 1 — CRIAR / EDITAR EVENTO
-       ══════════════════════════════════ -->
-  <div id="tab-evento" class="tab-panel active">
-    <div class="section">
-      <div class="section-title">📋 Novo Evento</div>
-      <div class="form-grid">
-        <div class="field-group">
-          <label>Nome do evento</label>
-          <input type="text" id="evNome" placeholder="Ex: Fut de Quinta" />
+      <!-- Login -->
+      <div id="formLogin">
+        <div class="field-group" style="margin-bottom:12px">
+          <label>Email</label>
+          <input type="email" id="loginEmail" placeholder="seu@email.com"/>
         </div>
-        <div class="field-group">
-          <label>Data</label>
-          <input type="date" id="evData" />
+        <div class="field-group" style="margin-bottom:20px">
+          <label>Senha</label>
+          <input type="password" id="loginSenha" placeholder="••••••••"
+            onkeydown="if(event.key==='Enter') fazerLogin()"/>
         </div>
-        <div class="field-group">
-          <label>Local</label>
-          <input type="text" id="evLocal" placeholder="Ex: Campo do Zé" />
-        </div>
-        <div class="field-group">
-          <label>Valor por pessoa (R$)</label>
-          <input type="number" id="evValor" placeholder="0,00" min="0" step="0.01" />
+        <button class="btn btn-primary btn-full" onclick="fazerLogin()">🔐 Entrar</button>
+        <div class="auth-divider">ou</div>
+        <div style="text-align:center">
+          <button class="auth-link" onclick="authTab('reset')">Esqueci minha senha</button>
         </div>
       </div>
-      <div style="margin-top:16px">
-        <button class="btn btn-primary btn-full" onclick="criarEvento()">✅ Criar Evento</button>
+
+      <!-- Cadastro -->
+      <div id="formCadastro" style="display:none">
+        <div class="field-group" style="margin-bottom:12px">
+          <label>Email</label>
+          <input type="email" id="cadEmail" placeholder="seu@email.com"/>
+        </div>
+        <div class="field-group" style="margin-bottom:12px">
+          <label>Senha</label>
+          <input type="password" id="cadSenha" placeholder="mínimo 6 caracteres"/>
+        </div>
+        <div class="field-group" style="margin-bottom:20px">
+          <label>Confirmar senha</label>
+          <input type="password" id="cadSenha2" placeholder="repita a senha"
+            onkeydown="if(event.key==='Enter') fazerCadastro()"/>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="fazerCadastro()">✅ Criar conta</button>
+      </div>
+
+      <!-- Reset senha -->
+      <div id="formReset" style="display:none">
+        <p style="font-size:0.85rem; color:rgba(255,255,255,0.45); margin-bottom:16px; text-align:center">
+          Informe seu email e enviaremos um link para redefinir sua senha.
+        </p>
+        <div class="field-group" style="margin-bottom:20px">
+          <label>Email</label>
+          <input type="email" id="resetEmail" placeholder="seu@email.com"/>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="enviarReset()">📧 Enviar link</button>
+        <div class="auth-divider">ou</div>
+        <div style="text-align:center">
+          <button class="auth-link" onclick="authTab('login')">← Voltar ao login</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAINEL PRINCIPAL
+     ══════════════════════════════════════ -->
+<div id="telaPainel" style="display:none">
+
+  <header class="header">
+    <span class="header-icon">⚽</span>
+    <div>
+      <h1>Tal do Fut</h1>
+      <p>Painel do Administrador</p>
+    </div>
+    <div class="header-right">
+      <span class="header-badge" id="headerEmail"></span>
+      <button class="btn btn-ghost btn-sm" onclick="fazerLogout()">Sair</button>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- Seletor de evento -->
+    <div class="evt-selector">
+      <label>Evento:</label>
+      <select id="eventoSelect" onchange="trocarEvento()">
+        <option value="">— Selecione ou crie um evento —</option>
+      </select>
+      <button class="btn btn-danger btn-sm" onclick="deletarEvento()">🗑</button>
+    </div>
+
+    <!-- Alerta mínimo jogadores -->
+    <div id="alertaPoucos" class="alerta alerta-warn" style="display:none">
+      ⚠️ Lista com poucos jogadores! Mínimo recomendado: <strong>10 jogadores</strong>.
+    </div>
+
+    <!-- Tabs -->
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="tab('tab-evento',this)">🗓 Evento</button>
+      <button class="tab-btn" onclick="tab('tab-jogadores',this)">👥 Jogadores</button>
+      <button class="tab-btn" onclick="tab('tab-times',this)">🎲 Times</button>
+      <button class="tab-btn" onclick="tab('tab-pix',this)">💰 Pix</button>
+      <button class="tab-btn" onclick="tab('tab-whats',this)">📲 WhatsApp</button>
+    </div>
+
+    <!-- ── TAB EVENTO ── -->
+    <div id="tab-evento" class="tab-panel active">
+      <div class="section">
+        <div class="section-title">📋 Criar Novo Evento</div>
+        <div class="form-grid">
+          <div class="field-group"><label>Nome</label><input type="text" id="evNome" placeholder="Fut de quinta-feira"/></div>
+          <div class="field-group"><label>Data</label><input type="date" id="evData"/></div>
+          <div class="field-group"><label>Horário</label><input type="text" id="evHora" placeholder="20:00"/></div>
+          <div class="field-group"><label>Local</label><input type="text" id="evLocal" placeholder="Campo do Zé"/></div>
+          <div class="field-group"><label>Valor por pessoa (R$)</label><input type="number" id="evValor" placeholder="0,00" min="0" step="0.01"/></div>
+          <div class="field-group"><label>Mínimo de jogadores</label><input type="number" id="evMinimo" value="10" min="2" max="50"/></div>
+        </div>
+        <div style="margin-top:16px">
+          <button class="btn btn-primary btn-full" onclick="criarEvento()">✅ Criar Evento</button>
+        </div>
+      </div>
+
+      <!-- Link compartilhável -->
+      <div id="linkSection" class="section" style="display:none">
+        <div class="section-title">🔗 Link dos Jogadores</div>
+        <p style="font-size:0.83rem; color:rgba(255,255,255,0.45); margin-bottom:8px">Envie este link no grupo:</p>
+        <div class="link-box">
+          <span id="linkTexto"></span>
+          <button class="btn btn-outline btn-sm" onclick="copiarLink()">📋 Copiar</button>
+          <a id="linkAbrir" class="btn btn-primary btn-sm" target="_blank">↗ Abrir</a>
+        </div>
       </div>
     </div>
 
-    <!-- Link compartilhável -->
-    <div id="linkSection" class="section" style="display:none">
-      <div class="section-title">🔗 Link Compartilhável</div>
-      <p style="font-size:0.85rem; color:rgba(255,255,255,0.5); margin-bottom:8px">
-        Envie este link para os jogadores se cadastrarem:
-      </p>
-      <div class="link-box">
-        <span id="linkTexto"></span>
-        <button class="btn btn-outline btn-sm" onclick="copyToClipboard(document.getElementById('linkTexto').textContent)">📋 Copiar</button>
-        <a id="linkAbrir" class="btn btn-primary btn-sm" target="_blank">↗ Abrir</a>
+    <!-- ── TAB JOGADORES ── -->
+    <div id="tab-jogadores" class="tab-panel">
+      <div class="stats-bar">
+        <div class="stat-card"><div class="stat-number" id="sTotal">0</div><div class="stat-label">Jogadores</div></div>
+        <div class="stat-card"><div class="stat-number" id="sPagaram">0</div><div class="stat-label">Pagaram</div></div>
+        <div class="stat-card"><div class="stat-number" id="sArrecadado" style="font-size:1.3rem">R$0</div><div class="stat-label">Arrecadado</div></div>
+        <div class="stat-card"><div class="stat-number" id="sGoleiros">0</div><div class="stat-label">Goleiros</div></div>
+      </div>
+
+      <!-- Add manual -->
+      <div class="section">
+        <div class="section-title">➕ Adicionar Jogador</div>
+        <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end">
+          <input type="text" id="nomeJog" placeholder="Nome do jogador" style="flex:1; min-width:130px"/>
+          <div>
+            <div style="font-size:0.68rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:rgba(255,255,255,0.4); margin-bottom:5px">Nível</div>
+            <div class="nivel-row" id="nivelAdmin">
+              <button class="nivel-btn active" data-n="1" onclick="setNivelAdmin(1)">★</button>
+              <button class="nivel-btn" data-n="2" onclick="setNivelAdmin(2)">★</button>
+              <button class="nivel-btn" data-n="3" onclick="setNivelAdmin(3)">★</button>
+            </div>
+          </div>
+          <label style="display:flex; align-items:center; gap:6px; font-size:0.85rem; cursor:pointer; white-space:nowrap">
+            <input type="checkbox" id="isGoleiroAdmin" style="width:16px; height:16px; accent-color:var(--ouro)"/> Goleiro
+          </label>
+          <button class="btn btn-primary" onclick="adminAdd()">Adicionar</button>
+        </div>
+      </div>
+
+      <!-- Lista -->
+      <div class="section">
+        <div class="section-title">📋 Lista Completa</div>
+        <div id="playerList"><div class="empty-state"><span class="emoji">🏟</span><p>Selecione ou crie um evento.</p></div></div>
+        <div class="divider"></div>
+        <button class="btn btn-danger btn-sm" onclick="limparLista()">🗑 Limpar lista</button>
       </div>
     </div>
-  </div>
 
-  <!-- ══════════════════════════════════
-       TAB 2 — JOGADORES
-       ══════════════════════════════════ -->
-  <div id="tab-jogadores" class="tab-panel">
+    <!-- ── TAB TIMES ── -->
+    <div id="tab-times" class="tab-panel">
+      <div class="section">
+        <div class="section-title">🎲 Configurar Sorteio</div>
 
-    <!-- Stats -->
-    <div class="stats-bar">
-      <div class="stat-card">
-        <div class="stat-number" id="statTotal">0</div>
-        <div class="stat-label">Jogadores</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number" id="statPagaram">0</div>
-        <div class="stat-label">Pagaram</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number" id="statArrecadado">R$0</div>
-        <div class="stat-label">Arrecadado</div>
-      </div>
-    </div>
-
-    <!-- Adicionar jogador manualmente -->
-    <div class="section">
-      <div class="section-title">➕ Adicionar Jogador</div>
-      <div class="input-row" style="flex-wrap:wrap; gap:10px;">
-        <input type="text" id="nomeJogador" placeholder="Nome do jogador" style="min-width:140px" />
-        <div>
-          <div style="font-size:0.7rem; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:rgba(255,255,255,0.4); margin-bottom:4px;">Nível</div>
-          <div class="nivel-admin-row" id="nivelAdminInput">
-            <button class="nivel-admin-btn active" data-n="1" onclick="selecionarNivelAdmin(1)">★</button>
-            <button class="nivel-admin-btn" data-n="2" onclick="selecionarNivelAdmin(2)">★</button>
-            <button class="nivel-admin-btn" data-n="3" onclick="selecionarNivelAdmin(3)">★</button>
+        <div class="form-grid" style="margin-bottom:16px">
+          <div class="field-group">
+            <label>Número de times</label>
+            <input type="number" id="numTimes" value="2" min="2" max="8"/>
+          </div>
+          <div class="field-group">
+            <label>Mínimo de jogadores por time</label>
+            <input type="number" id="minPorTime" value="4" min="1" max="20"/>
           </div>
         </div>
-        <button class="btn btn-primary" onclick="adminAddPlayer()" style="align-self:flex-end">Adicionar</button>
+
+        <div id="regrasInfo" class="alerta alerta-ok" style="margin-bottom:16px; display:none"></div>
+
+        <button class="btn btn-gold btn-full" onclick="realizarSorteio()">🎲 Sortear Times!</button>
+
+        <!-- Goleiros -->
+        <div id="goleirosSection" style="display:none; margin-top:16px">
+          <div class="goleiros-wrap">
+            <div class="goleiros-label">🧤 Goleiros (fora do sorteio de linha)</div>
+            <div id="goleirosChips"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resultado -->
+      <div id="timesResultado"></div>
+
+      <!-- Publicar para jogadores -->
+      <div id="btnPublicar" style="display:none; margin-top:12px">
+        <button class="btn btn-primary btn-full" onclick="publicarTimes()">📢 Publicar times para os jogadores</button>
       </div>
     </div>
 
-    <!-- Lista -->
-    <div class="section">
-      <div class="section-title">📋 Lista de Jogadores</div>
-      <div id="playerList"><div class="empty-state"><div class="emoji">🏟</div><p>Nenhum jogador ainda.<br>Selecione ou crie um evento.</p></div></div>
-      <div class="divider"></div>
-      <button class="btn btn-danger btn-sm" onclick="limparLista()">🗑 Limpar lista</button>
-    </div>
-  </div>
-
-  <!-- ══════════════════════════════════
-       TAB 3 — SORTEIO
-       ══════════════════════════════════ -->
-  <div id="tab-sorteio" class="tab-panel">
-    <div class="section">
-      <div class="section-title">🎲 Sorteio de Times</div>
-      <div class="field-group" style="max-width:200px; margin-bottom:16px">
-        <label>Número de times</label>
-        <input type="number" id="numTimes" value="2" min="2" max="8" />
+    <!-- ── TAB PIX ── -->
+    <div id="tab-pix" class="tab-panel">
+      <div class="section">
+        <div class="section-title">💰 Chave Pix</div>
+        <div class="form-grid">
+          <div class="field-group">
+            <label>Tipo de chave</label>
+            <select id="pixTipo">
+              <option value="cpf">CPF</option>
+              <option value="cnpj">CNPJ</option>
+              <option value="telefone">Telefone</option>
+              <option value="email">Email</option>
+              <option value="aleatoria">Chave aleatória</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Chave Pix</label>
+            <input type="text" id="pixChave" placeholder="Ex: 11999999999"/>
+          </div>
+          <div class="field-group">
+            <label>Nome do recebedor</label>
+            <input type="text" id="pixNome" placeholder="Ex: João Silva"/>
+          </div>
+          <div class="field-group">
+            <label>Valor (R$) — opcional</label>
+            <input type="number" id="pixValor" placeholder="Deixe vazio p/ usar o do evento" min="0" step="0.01"/>
+          </div>
+        </div>
+        <div style="margin-top:16px">
+          <button class="btn btn-primary btn-full" onclick="gerarQR()">📱 Gerar QR Code</button>
+        </div>
       </div>
-      <button class="btn btn-gold btn-full" onclick="realizarSorteio()">🎲 Sortear Agora!</button>
 
-      <!-- Goleiros separados -->
-      <div id="goleirosDisplay" style="margin-top:16px; display:none">
-        <div style="font-size:0.8rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--ouro); margin-bottom:8px;">🧤 Goleiros (fora do sorteio)</div>
-        <div id="goleirosLista"></div>
+      <!-- QR -->
+      <div id="qrSection" class="section" style="display:none">
+        <div class="section-title">📱 QR Code Pix</div>
+        <div class="pix-box">
+          <canvas id="qrCanvas"></canvas>
+          <div class="pix-chave" id="pixChaveExibir"></div>
+          <p style="font-size:0.8rem; color:rgba(255,255,255,0.4); margin-top:8px">Os jogadores verão este QR na área deles</p>
+        </div>
+        <button class="btn btn-outline btn-full" style="margin-top:12px" onclick="salvarPix()">💾 Salvar configuração Pix no evento</button>
       </div>
     </div>
 
-    <div id="timesResultado" class="times-resultado"></div>
-  </div>
+    <!-- ── TAB WHATSAPP ── -->
+    <div id="tab-whats" class="tab-panel">
+      <div class="section">
+        <div class="section-title">📲 Lembrete WhatsApp</div>
+        <p style="font-size:0.85rem; color:rgba(255,255,255,0.45); margin-bottom:16px">
+          Clique no botão abaixo para abrir o WhatsApp com a mensagem de lembrete pronta para o seu grupo.
+        </p>
 
-</div><!-- /container -->
+        <div class="field-group" style="margin-bottom:14px">
+          <label>Número do grupo (ou contato)</label>
+          <input type="tel" id="whatsNumero" placeholder="5511999999999 (com DDI e DDD, sem +)"/>
+          <small style="color:rgba(255,255,255,0.3); font-size:0.75rem; margin-top:4px">Para grupos, use o link de convite do grupo.</small>
+        </div>
 
-<script src="script.js"></script>
+        <div class="field-group" style="margin-bottom:16px">
+          <label>Mensagem personalizada (opcional)</label>
+          <textarea id="whatsMsg" placeholder="Deixe vazio para usar a mensagem padrão..."></textarea>
+        </div>
+
+        <button class="btn btn-whatsapp btn-full" onclick="abrirWhatsApp()">
+          📲 Abrir WhatsApp com lembrete
+        </button>
+      </div>
+
+      <div class="section">
+        <div class="section-title">📋 Preview da mensagem</div>
+        <div id="msgPreview" style="background:var(--c2); border-radius:10px; padding:16px; font-size:0.88rem; white-space:pre-wrap; color:rgba(255,255,255,0.7); line-height:1.6">
+          Selecione um evento para ver o preview.
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /container -->
+</div><!-- /telaPainel -->
+
+<script src="supabase.js"></script>
 <script>
-/* ─── Estado local ─── */
-let eventoAtivo = null;
-let nivelSelecionadoAdmin = 1;
+/* ═══════════════════════════════════════
+   ESTADO
+   ═══════════════════════════════════════ */
+let eventoAtivo   = null;
+let jogadoresCache = [];
+let nivelAdminSel  = 1;
+let timesGerados   = null;
+let realtimeSub    = null;
+let pixConfig      = null;
 
-/* ─── Inicialização ─── */
-function init() {
-  popularSelectEventos();
-  const salvo = localStorage.getItem('eventoAtivoAdmin');
+/* ═══════════════════════════════════════
+   AUTH
+   ═══════════════════════════════════════ */
+function authTab(t) {
+  document.getElementById('formLogin').style.display   = t==='login'   ?'block':'none';
+  document.getElementById('formCadastro').style.display= t==='cadastro'?'block':'none';
+  document.getElementById('formReset').style.display   = t==='reset'   ?'block':'none';
+  document.querySelectorAll('.auth-tab').forEach((b,i) => {
+    b.classList.toggle('active', (i===0&&t==='login')||(i===1&&t==='cadastro'));
+  });
+}
+
+async function fazerLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const senha  = document.getElementById('loginSenha').value;
+  if (!email || !senha) { showToast('Preencha email e senha','erro'); return; }
+  setLoading(true,'Entrando...');
+  const { error } = await authSignIn(email, senha);
+  setLoading(false);
+  if (error) { showToast('Erro: '+error.message,'erro'); return; }
+  await iniciarPainel();
+}
+
+async function fazerCadastro() {
+  const email = document.getElementById('cadEmail').value.trim();
+  const senha  = document.getElementById('cadSenha').value;
+  const senha2 = document.getElementById('cadSenha2').value;
+  if (!email || !senha) { showToast('Preencha todos os campos','erro'); return; }
+  if (senha !== senha2) { showToast('As senhas não coincidem','erro'); return; }
+  if (senha.length < 6)  { showToast('Senha mínimo 6 caracteres','erro'); return; }
+  setLoading(true,'Criando conta...');
+  const { error } = await authSignUp(email, senha);
+  setLoading(false);
+  if (error) { showToast('Erro: '+error.message,'erro'); return; }
+  showToast('✅ Conta criada! Faça login.','ok');
+  authTab('login');
+}
+
+async function enviarReset() {
+  const email = document.getElementById('resetEmail').value.trim();
+  if (!email) { showToast('Digite seu email','erro'); return; }
+  setLoading(true);
+  const { error } = await authResetPassword(email);
+  setLoading(false);
+  if (error) { showToast('Erro: '+error.message,'erro'); return; }
+  showToast('📧 Link enviado para seu email!','ok');
+  authTab('login');
+}
+
+async function fazerLogout() {
+  await authSignOut();
+  location.reload();
+}
+
+/* ═══════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════ */
+async function init() {
+  setLoading(true);
+  const user = await getUser();
+  setLoading(false);
+  if (user) {
+    await iniciarPainel();
+  } else {
+    document.getElementById('telaAuth').style.display = 'block';
+  }
+}
+
+async function iniciarPainel() {
+  const user = await getUser();
+  document.getElementById('telaAuth').style.display  = 'none';
+  document.getElementById('telaPainel').style.display = 'block';
+  document.getElementById('headerEmail').textContent  = user.email;
+  await popularSelect();
+  const salvo = localStorage.getItem('eventoAdmin_'+user.id);
   if (salvo) {
     document.getElementById('eventoSelect').value = salvo;
-    eventoAtivo = salvo;
-    mostrarLink();
+    await trocarEvento();
   }
-  renderTudo();
 }
 
-/* ─── Tabs ─── */
-function abrirTab(id, btn) {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+/* ═══════════════════════════════════════
+   TABS
+   ═══════════════════════════════════════ */
+function tab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   btn.classList.add('active');
+  if (id==='tab-jogadores') renderJogadores();
+  if (id==='tab-times')     atualizarRegrasInfo();
+  if (id==='tab-whats')     atualizarPreviewWhats();
+  if (id==='tab-pix')       carregarPix();
 }
 
-/* ─── Select de eventos ─── */
-function popularSelectEventos() {
+/* ═══════════════════════════════════════
+   EVENTOS
+   ═══════════════════════════════════════ */
+async function popularSelect() {
   const sel = document.getElementById('eventoSelect');
-  const events = getAllEvents();
-  const atual = sel.value;
-  sel.innerHTML = '<option value="">— Crie ou selecione um evento —</option>';
-  Object.values(events).forEach(e => {
+  const ant = sel.value;
+  const { data } = await listarEventos();
+  sel.innerHTML = '<option value="">— Selecione ou crie um evento —</option>';
+  (data||[]).forEach(e => {
     const opt = document.createElement('option');
-    opt.value = e.id;
-    opt.textContent = e.nome + (e.data ? ' · ' + e.data : '');
+    opt.value = e.id; opt.textContent = e.nome + (e.data?' · '+e.data:'');
     sel.appendChild(opt);
   });
-  if (atual) sel.value = atual;
+  if (ant) sel.value = ant;
 }
 
-function trocarEvento() {
+async function trocarEvento() {
   eventoAtivo = document.getElementById('eventoSelect').value || null;
-  localStorage.setItem('eventoAtivoAdmin', eventoAtivo || '');
-  mostrarLink();
-  renderTudo();
+  const user = await getUser();
+  if (user) localStorage.setItem('eventoAdmin_'+user.id, eventoAtivo||'');
+
+  if (realtimeSub) { db.removeChannel(realtimeSub); realtimeSub = null; }
+
+  if (!eventoAtivo) {
+    mostrarLink(false);
+    document.getElementById('alertaPoucos').style.display='none';
+    renderJogadores(); return;
+  }
+  mostrarLink(true);
+
+  // Realtime
+  realtimeSub = subscreverEvento(eventoAtivo, () => renderTudo());
+  await renderTudo();
 }
 
-/* ─── Criar evento ─── */
-function criarEvento() {
+async function criarEvento() {
   const nome  = document.getElementById('evNome').value.trim();
   const data  = document.getElementById('evData').value;
+  const hora  = document.getElementById('evHora').value.trim();
   const local = document.getElementById('evLocal').value.trim();
-  const valor = parseFloat(document.getElementById('evValor').value) || 0;
+  const valor = parseFloat(document.getElementById('evValor').value)||0;
+  const minimo= parseInt(document.getElementById('evMinimo').value)||10;
+  if (!nome) { showToast('⚠️ Nome do evento obrigatório','warn'); return; }
 
-  if (!nome) { showToast('⚠️ Dê um nome ao evento!'); return; }
-
+  setLoading(true,'Criando evento...');
   const id = gerarId();
-  const evento = { id, nome, data, local, valor, jogadores: [] };
-  saveEvent(evento);
+  const { error } = await criarEvento({ id, nome, data, hora, local, valor, minimo_jogadores: minimo });
+  setLoading(false);
+  if (error) { showToast('Erro: '+error.message,'erro'); return; }
 
-  eventoAtivo = id;
-  localStorage.setItem('eventoAtivoAdmin', id);
-
-  popularSelectEventos();
+  await popularSelect();
   document.getElementById('eventoSelect').value = id;
-  mostrarLink();
-  renderTudo();
-  showToast('✅ Evento criado!');
-
-  // Limpa campos
-  ['evNome','evData','evLocal','evValor'].forEach(id => document.getElementById(id).value = '');
+  eventoAtivo = id;
+  mostrarLink(true);
+  await renderTudo();
+  showToast('✅ Evento criado!','ok');
+  ['evNome','evData','evHora','evLocal','evValor'].forEach(i=>document.getElementById(i).value='');
 }
 
-/* ─── Deletar evento ─── */
-function deletarEvento() {
-  if (!eventoAtivo) { showToast('⚠️ Nenhum evento selecionado'); return; }
-  const evt = getEvent(eventoAtivo);
-  if (!confirm(`Excluir o evento "${evt.nome}"? Essa ação não pode ser desfeita.`)) return;
-
-  const all = getAllEvents();
-  delete all[eventoAtivo];
-  saveAllEvents(all);
+async function deletarEvento() {
+  if (!eventoAtivo) { showToast('Nenhum evento selecionado','warn'); return; }
+  if (!confirm('Excluir este evento e todos os jogadores?')) return;
+  setLoading(true);
+  await deletarEvento(eventoAtivo);
   eventoAtivo = null;
-  localStorage.removeItem('eventoAtivoAdmin');
-  popularSelectEventos();
   document.getElementById('eventoSelect').value = '';
-  document.getElementById('linkSection').style.display = 'none';
-  renderTudo();
-  showToast('🗑 Evento excluído');
+  mostrarLink(false);
+  await popularSelect();
+  renderJogadores();
+  setLoading(false);
+  showToast('🗑 Evento excluído','ok');
 }
 
-/* ─── Link compartilhável ─── */
-function mostrarLink() {
-  const section = document.getElementById('linkSection');
-  if (!eventoAtivo) { section.style.display = 'none'; return; }
-  const base = window.location.href.replace('admin.html', 'lista.html');
-  const url  = base.split('?')[0] + '?id=' + eventoAtivo;
+function mostrarLink(show) {
+  const s = document.getElementById('linkSection');
+  if (!show||!eventoAtivo) { s.style.display='none'; return; }
+  const base = 'https://opgmoraes.github.io/taldofut/lista.html';
+  const url  = base+'?id='+eventoAtivo;
   document.getElementById('linkTexto').textContent = url;
   document.getElementById('linkAbrir').href = url;
-  section.style.display = 'block';
+  s.style.display = 'block';
 }
 
-/* ─── Nível admin ─── */
-function selecionarNivelAdmin(n) {
-  nivelSelecionadoAdmin = n;
-  document.querySelectorAll('#nivelAdminInput .nivel-admin-btn').forEach(btn => {
-    btn.classList.toggle('active', parseInt(btn.dataset.n) <= n);
-  });
+async function copiarLink() {
+  const url = document.getElementById('linkTexto').textContent;
+  try { await navigator.clipboard.writeText(url); showToast('✅ Link copiado!','ok'); }
+  catch { showToast('Não foi possível copiar','erro'); }
 }
 
-/* ─── Adicionar jogador (admin) ─── */
-function adminAddPlayer() {
-  if (!eventoAtivo) { showToast('⚠️ Selecione ou crie um evento!'); return; }
-  const nome = document.getElementById('nomeJogador').value;
-  const res  = addPlayer(eventoAtivo, nome, nivelSelecionadoAdmin);
-  if (res === 'duplicado') { showToast('⚠️ Jogador já está na lista!'); return; }
-  if (!res) { showToast('⚠️ Digite um nome!'); return; }
-  document.getElementById('nomeJogador').value = '';
-  renderTudo();
-  showToast('✅ ' + nome.trim() + ' adicionado!');
+/* ═══════════════════════════════════════
+   JOGADORES
+   ═══════════════════════════════════════ */
+function setNivelAdmin(n) {
+  nivelAdminSel = n;
+  document.querySelectorAll('#nivelAdmin .nivel-btn').forEach(b=>b.classList.toggle('active', parseInt(b.dataset.n)<=n));
 }
 
-/* ─── Limpar lista ─── */
-function limparLista() {
+async function adminAdd() {
+  if (!eventoAtivo) { showToast('Selecione um evento','warn'); return; }
+  const nome    = document.getElementById('nomeJog').value;
+  const goleiro = document.getElementById('isGoleiroAdmin').checked;
+  setLoading(true,'Adicionando...');
+  const { error } = await adicionarJogador(eventoAtivo, nome, nivelAdminSel, goleiro);
+  setLoading(false);
+  if (error?.message==='duplicado') { showToast('⚠️ Nome já está na lista!','warn'); return; }
+  if (error) { showToast('Erro: '+error.message,'erro'); return; }
+  document.getElementById('nomeJog').value = '';
+  document.getElementById('isGoleiroAdmin').checked = false;
+  await renderTudo();
+  showToast('✅ Jogador adicionado!','ok');
+}
+
+async function limparLista() {
   if (!eventoAtivo) return;
-  if (!confirm('Remover todos os jogadores da lista?')) return;
-  const evt = getEvent(eventoAtivo);
-  evt.jogadores = [];
-  saveEvent(evt);
-  renderTudo();
-  showToast('🗑 Lista limpa!');
+  if (!confirm('Remover todos os jogadores?')) return;
+  setLoading(true);
+  for (const j of jogadoresCache) await removerJogador(j.id);
+  setLoading(false);
+  await renderTudo();
+  showToast('🗑 Lista limpa','ok');
 }
 
-/* ─── Renderizar tudo ─── */
-function renderTudo() {
+async function renderTudo() {
+  if (!eventoAtivo) return;
+  const { data } = await listarJogadores(eventoAtivo);
+  jogadoresCache = data || [];
   renderStats();
   renderJogadores();
+  checarAlertas();
+  atualizarRegrasInfo();
+  atualizarPreviewWhats();
 }
 
 function renderStats() {
-  if (!eventoAtivo) {
-    document.getElementById('statTotal').textContent = '0';
-    document.getElementById('statPagaram').textContent = '0';
-    document.getElementById('statArrecadado').textContent = 'R$0';
-    return;
+  const j = jogadoresCache;
+  const pagaram = j.filter(x=>x.pago).length;
+  let valor = 0;
+  if (eventoAtivo) {
+    const sel = document.getElementById('eventoSelect');
+    const opt = sel.options[sel.selectedIndex];
+    // valor vem do cache do evento (buscar async é pesado, usamos o que temos)
   }
-  const evt = getEvent(eventoAtivo);
-  if (!evt) return;
-  const pagaram = evt.jogadores.filter(j => j.pago).length;
-  const arrecadado = pagaram * (evt.valor || 0);
-  document.getElementById('statTotal').textContent = evt.jogadores.length;
-  document.getElementById('statPagaram').textContent = pagaram;
-  document.getElementById('statArrecadado').textContent = formatBRL(arrecadado);
+  document.getElementById('sTotal').textContent = j.length;
+  document.getElementById('sPagaram').textContent = pagaram;
+  document.getElementById('sGoleiros').textContent = j.filter(x=>x.goleiro).length;
+  // Arrecadado: busca valor do evento
+  getEvento(eventoAtivo).then(({data:evt})=>{
+    if (evt) document.getElementById('sArrecadado').textContent = formatBRL(pagaram*(evt.valor||0));
+  });
 }
 
 function renderJogadores() {
   const container = document.getElementById('playerList');
-  if (!eventoAtivo) {
-    container.innerHTML = '<div class="empty-state"><div class="emoji">🏟</div><p>Nenhum evento selecionado.</p></div>';
+  if (!eventoAtivo||!jogadoresCache.length) {
+    container.innerHTML = '<div class="empty-state"><span class="emoji">👥</span><p>Nenhum jogador ainda.</p></div>';
     return;
   }
-  const evt = getEvent(eventoAtivo);
-  if (!evt || evt.jogadores.length === 0) {
-    container.innerHTML = '<div class="empty-state"><div class="emoji">👥</div><p>Nenhum jogador ainda.</p></div>';
-    return;
-  }
-
-  container.innerHTML = evt.jogadores.map((j, i) => `
+  container.innerHTML = jogadoresCache.map((j,i)=>`
     <div class="player-item">
-      <span class="player-number">${i + 1}</span>
-
-      <span class="player-name">${j.nome}</span>
-
-      <!-- Estrelas (clicáveis no admin) -->
-      <div class="nivel-admin-row" style="gap:2px">
-        ${[1,2,3].map(n => `
-          <button class="nivel-admin-btn ${n <= (j.nivel||1) ? 'active' : ''}"
-            onclick="mudarNivel('${j.nome}', ${n})" title="${n} estrela${n>1?'s':''}">★</button>
-        `).join('')}
+      <span class="player-num">${i+1}</span>
+      <span class="player-nome">${j.nome}</span>
+      <div class="nivel-row" style="gap:2px">
+        ${[1,2,3].map(n=>`<button class="nivel-btn ${n<=(j.nivel||1)?'active':''}" onclick="mudarNivel('${j.id}',${n})">★</button>`).join('')}
       </div>
-
-      ${j.goleiro ? '<span class="badge badge-goleiro">🧤 Goleiro</span>' : ''}
-      <span class="badge ${j.pago ? 'badge-pago' : 'badge-pendente'}">
-        ${j.pago ? '✅ Pago' : '⏳ Pendente'}
-      </span>
-
+      ${j.goleiro?'<span class="badge badge-goleiro">🧤 Goleiro</span>':''}
+      <span class="badge ${j.pago?'badge-pago':'badge-pendente'}">${j.pago?'✅ Pago':'⏳ Pendente'}</span>
       <div class="player-actions">
-        <button class="btn btn-outline btn-sm" onclick="adminTogglePag('${j.nome}')" title="Alternar pagamento">
-          ${j.pago ? '↩ Desfazer' : '💰 Pagou'}
-        </button>
-        <button class="btn btn-outline btn-sm" onclick="adminToggleGoleiro('${j.nome}')" title="Marcar goleiro">
-          🧤
-        </button>
-        <button class="btn btn-danger btn-sm" onclick="adminRemove('${j.nome}')" title="Remover">✕</button>
+        <button class="btn btn-outline btn-sm" onclick="togglePag('${j.id}',${j.pago})">${j.pago?'↩':'💰'}</button>
+        <button class="btn btn-outline btn-sm btn-icon" onclick="toggleGol('${j.id}',${j.goleiro})" title="${j.goleiro?'Remover goleiro':'Marcar goleiro'}">🧤</button>
+        <button class="btn btn-danger btn-sm btn-icon" onclick="remover('${j.id}','${j.nome}')">✕</button>
       </div>
     </div>
   `).join('');
 }
 
-/* ─── Actions admin ─── */
-function adminTogglePag(nome) {
-  togglePagamento(eventoAtivo, nome);
-  renderTudo();
+async function togglePag(id, atual) {
+  await atualizarJogador(id, { pago: !atual });
+  await renderTudo();
 }
 
-function adminToggleGoleiro(nome) {
-  toggleGoleiro(eventoAtivo, nome);
-  renderTudo();
+async function toggleGol(id, atual) {
+  await atualizarJogador(id, { goleiro: !atual });
+  await renderTudo();
 }
 
-function adminRemove(nome) {
-  if (!confirm(`Remover ${nome} da lista?`)) return;
-  removePlayer(eventoAtivo, nome);
-  renderTudo();
-  showToast('🗑 ' + nome + ' removido');
+async function mudarNivel(id, nivel) {
+  await atualizarJogador(id, { nivel });
+  await renderTudo();
 }
 
-function mudarNivel(nome, nivel) {
-  setNivel(eventoAtivo, nome, nivel);
-  renderJogadores();
+async function remover(id, nome) {
+  if (!confirm(`Remover ${nome}?`)) return;
+  await removerJogador(id);
+  await renderTudo();
+  showToast('🗑 '+nome+' removido','ok');
 }
 
-/* ─── Sorteio ─── */
-function realizarSorteio() {
-  if (!eventoAtivo) { showToast('⚠️ Selecione um evento!'); return; }
-  const n = parseInt(document.getElementById('numTimes').value) || 2;
-  const evt = getEvent(eventoAtivo);
-
-  // Mostra goleiros
-  const goleiros = evt.jogadores.filter(j => j.goleiro);
-  const divGol = document.getElementById('goleirosDisplay');
-  const listaGol = document.getElementById('goleirosLista');
-  if (goleiros.length > 0) {
-    divGol.style.display = 'block';
-    listaGol.innerHTML = goleiros.map(g =>
-      `<span style="display:inline-block; background:rgba(245,200,66,0.1); border:1px solid rgba(245,200,66,0.3); border-radius:6px; padding:4px 10px; margin:3px; font-size:0.85rem; color:var(--ouro)">🧤 ${g.nome} ${renderStars(g.nivel||1)}</span>`
-    ).join('');
+/* ═══════════════════════════════════════
+   ALERTAS
+   ═══════════════════════════════════════ */
+async function checarAlertas() {
+  if (!eventoAtivo) return;
+  const { data: evt } = await getEvento(eventoAtivo);
+  const min = evt?.minimo_jogadores || 10;
+  const el  = document.getElementById('alertaPoucos');
+  if (jogadoresCache.length < min) {
+    el.innerHTML = `⚠️ Poucos jogadores! Você tem <strong>${jogadoresCache.length}</strong> de <strong>${min}</strong> recomendados.`;
+    el.style.display = 'flex';
   } else {
-    divGol.style.display = 'none';
+    el.style.display = 'none';
   }
+}
 
-  const times = sortearTimes(eventoAtivo, n);
-  const resultado = document.getElementById('timesResultado');
+/* ═══════════════════════════════════════
+   TIMES
+   ═══════════════════════════════════════ */
+function atualizarRegrasInfo() {
+  const el = document.getElementById('regrasInfo');
+  if (!eventoAtivo||!jogadoresCache.length) { el.style.display='none'; return; }
+  const n     = parseInt(document.getElementById('numTimes').value)||2;
+  const min   = parseInt(document.getElementById('minPorTime').value)||4;
+  const linha = jogadoresCache.filter(j=>!j.goleiro).length;
+  const total = n * min;
+  el.style.display = 'flex';
+  if (linha < total) {
+    el.className = 'alerta alerta-warn';
+    el.textContent = `⚠️ ${linha} jogadores de linha — precisa de no mínimo ${total} para ${n} times com ${min} cada.`;
+  } else {
+    const sobra = linha - (Math.floor(linha/n)*n);
+    el.className = 'alerta alerta-ok';
+    el.textContent = `✅ ${linha} de linha → ${n} times com ~${Math.floor(linha/n)} jogadores${sobra?`. ${sobra} vão para time extra`:''}.`;
+  }
+}
 
-  if (times === null) {
-    resultado.innerHTML = '<div class="section" style="text-align:center; color:#f87171">⚠️ Jogadores insuficientes para sortear!</div>';
+async function realizarSorteio() {
+  if (!eventoAtivo) { showToast('Selecione um evento','warn'); return; }
+  const n   = parseInt(document.getElementById('numTimes').value)||2;
+  const min = parseInt(document.getElementById('minPorTime').value)||4;
+  const linha = jogadoresCache.filter(j=>!j.goleiro).length;
+
+  if (linha < n * min) {
+    showToast(`⚠️ Mínimo ${n*min} jogadores de linha para ${n} times com ${min} cada!`,'warn');
     return;
   }
-  if (times.length === 0) { showToast('⚠️ Sem jogadores!'); return; }
 
-  resultado.innerHTML = times.map(t => `
-    <div class="time-card">
-      <div class="time-header" style="background:${t.cor}">${t.nome}</div>
+  const goleiros = jogadoresCache.filter(j=>j.goleiro);
+  const gSec = document.getElementById('goleirosSection');
+  if (goleiros.length) {
+    gSec.style.display = 'block';
+    document.getElementById('goleirosChips').innerHTML = goleiros.map(g=>
+      `<span class="goleiro-chip">🧤 ${g.nome} ${renderStars(g.nivel||1)}</span>`
+    ).join('');
+  } else { gSec.style.display='none'; }
+
+  const { times, reservas } = sortearTimesEquilibrado(jogadoresCache, n);
+  timesGerados = times;
+
+  const resultado = document.getElementById('timesResultado');
+  resultado.innerHTML = `<div class="times-grid">${times.map(t=>`
+    <div class="time-card ${t.extra?'time-extra':''}">
+      <div class="time-header" style="background:${t.extra?'transparent':t.cor}">
+        <span>${t.nome}${t.extra?' (Extra)':''}</span>
+        <span class="stars-total">⭐ ${t.totalEstrelas}</span>
+      </div>
       <div class="time-body">
-        ${t.jogadores.map(j => `
-          <div class="time-player">
-            ${renderStars(j.nivel||1)}
-            <span>${j.nome}</span>
-          </div>
-        `).join('')}
-        <div style="font-size:0.7rem; color:rgba(255,255,255,0.35); margin-top:6px; padding-top:6px; border-top:1px solid rgba(255,255,255,0.06)">
-          ${t.jogadores.length} jogador${t.jogadores.length !== 1 ? 'es' : ''}
-        </div>
+        ${t.jogadores.map(j=>`<div class="time-player">${renderStars(j.nivel||1)}<span>${j.nome}</span></div>`).join('')}
+        <div class="time-qtd">${t.jogadores.length} jogador${t.jogadores.length!==1?'es':''}</div>
       </div>
     </div>
-  `).join('');
+  `).join('')}</div>`;
 
-  showToast('🎲 Times sorteados!');
+  if (reservas.length) {
+    resultado.innerHTML += `<div class="alerta alerta-warn" style="margin-top:10px">
+      ⚠️ Reservas/Banco: ${reservas.map(r=>r.nome).join(', ')}
+    </div>`;
+  }
+
+  document.getElementById('btnPublicar').style.display = 'block';
+  showToast('🎲 Times sorteados!','ok');
 }
 
-/* ─── Start ─── */
+async function publicarTimes() {
+  if (!timesGerados||!eventoAtivo) return;
+  setLoading(true,'Publicando...');
+  await atualizarEvento(eventoAtivo, { times_sorteados: JSON.stringify(timesGerados) });
+  setLoading(false);
+  showToast('📢 Times publicados para os jogadores!','ok');
+}
+
+/* ═══════════════════════════════════════
+   PIX / QR CODE
+   ═══════════════════════════════════════ */
+async function carregarPix() {
+  if (!eventoAtivo) return;
+  const { data: evt } = await getEvento(eventoAtivo);
+  if (evt?.chave_pix) {
+    try {
+      pixConfig = JSON.parse(evt.chave_pix);
+      document.getElementById('pixChave').value = pixConfig.chave || '';
+      document.getElementById('pixNome').value  = pixConfig.nome  || '';
+      document.getElementById('pixTipo').value  = pixConfig.tipo  || 'telefone';
+    } catch {}
+  }
+}
+
+async function gerarQR() {
+  const chave = document.getElementById('pixChave').value.trim();
+  const nome  = document.getElementById('pixNome').value.trim();
+  const tipo  = document.getElementById('pixTipo').value;
+  let valor   = parseFloat(document.getElementById('pixValor').value)||0;
+
+  if (!chave) { showToast('⚠️ Informe a chave Pix','warn'); return; }
+
+  // Se valor não informado, pega do evento
+  if (!valor && eventoAtivo) {
+    const { data: evt } = await getEvento(eventoAtivo);
+    valor = evt?.valor || 0;
+  }
+
+  // Gera string EMV Pix simplificado
+  const pixStr = gerarPixStr(chave, nome, valor);
+  pixConfig = { chave, nome, tipo, valor, pixStr };
+
+  const section = document.getElementById('qrSection');
+  section.style.display = 'block';
+  document.getElementById('pixChaveExibir').textContent = `${tipo.toUpperCase()}: ${chave}${nome?' · '+nome:''}${valor?' · '+formatBRL(valor):''}`;
+
+  QRCode.toCanvas(document.getElementById('qrCanvas'), pixStr, {
+    width: 220, margin: 2,
+    color: { dark: '#000000', light: '#ffffff' }
+  });
+}
+
+/** Gera string PIX EMV (BR Code) simplificado */
+function gerarPixStr(chave, nome, valor) {
+  function f(id, v) { return id + v.length.toString().padStart(2,'0') + v; }
+  const gui    = f('00','br.gov.bcb.pix') + f('01', chave);
+  const merch  = f('26', gui);
+  const nomeF  = (nome||'RECEBEDOR').substring(0,25).toUpperCase();
+  const cidadeF= 'SAO PAULO';
+  const valorF = valor > 0 ? f('54', valor.toFixed(2)) : '';
+  let str = f('00','01') + f('01','12') + merch + f('52','0000') + f('53','986') + valorF +
+            f('58','BR') + f('59', nomeF) + f('60', cidadeF) + f('62', f('05','***'));
+  // CRC16
+  str += '6304';
+  let crc = 0xFFFF;
+  for (let c of new TextEncoder().encode(str)) {
+    crc ^= c << 8;
+    for (let i=0;i<8;i++) crc = crc&0x8000 ? (crc<<1)^0x1021 : crc<<1;
+  }
+  return str + (crc&0xFFFF).toString(16).toUpperCase().padStart(4,'0');
+}
+
+async function salvarPix() {
+  if (!pixConfig||!eventoAtivo) { showToast('Gere o QR primeiro','warn'); return; }
+  setLoading(true);
+  await atualizarEvento(eventoAtivo, { chave_pix: JSON.stringify(pixConfig) });
+  setLoading(false);
+  showToast('💾 Pix salvo no evento!','ok');
+}
+
+/* ═══════════════════════════════════════
+   WHATSAPP
+   ═══════════════════════════════════════ */
+async function atualizarPreviewWhats() {
+  const el = document.getElementById('msgPreview');
+  if (!eventoAtivo) { el.textContent='Selecione um evento para ver o preview.'; return; }
+  const { data: evt } = await getEvento(eventoAtivo);
+  if (!evt) return;
+  const custom = document.getElementById('whatsMsg').value.trim();
+  el.textContent = custom || gerarMsgWhats(evt, jogadoresCache);
+}
+
+function gerarMsgWhats(evt, jogadores) {
+  const confirmados = jogadores.filter(j=>j.confirmado||true).length;
+  const goleiros    = jogadores.filter(j=>j.goleiro).length;
+  const link        = `https://opgmoraes.github.io/taldofut/lista.html?id=${eventoAtivo}`;
+  const data        = evt.data ? new Date(evt.data+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'}) : '';
+
+  return `⚽ *${evt.nome}*
+
+📅 ${data}${evt.hora?' às '+evt.hora:''}
+📍 ${evt.local||'A definir'}
+💰 ${evt.valor ? formatBRL(evt.valor)+' por pessoa' : 'Valor a definir'}
+
+👥 Lista atual: *${confirmados} jogadores* (${goleiros} goleiro${goleiros!==1?'s':''})
+
+Para entrar na lista ou ver os times:
+${link}
+
+Confirme sua presença! ⚽🔥`;
+}
+
+async function abrirWhatsApp() {
+  if (!eventoAtivo) { showToast('Selecione um evento','warn'); return; }
+  const { data: evt } = await getEvento(eventoAtivo);
+  const numero = document.getElementById('whatsNumero').value.trim().replace(/\D/g,'');
+  const custom = document.getElementById('whatsMsg').value.trim();
+  const msg    = encodeURIComponent(custom || gerarMsgWhats(evt, jogadoresCache));
+  const url    = numero
+    ? `https://wa.me/${numero}?text=${msg}`
+    : `https://wa.me/?text=${msg}`;
+  window.open(url, '_blank');
+}
+
+/* ═══════════════════════════════════════
+   START
+   ═══════════════════════════════════════ */
 init();
 </script>
 </body>
