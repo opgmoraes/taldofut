@@ -243,9 +243,14 @@
         <div class="section-title">📱 QR Code Pix</div>
         <div class="pix-box">
           <canvas id="qrCanvas"></canvas>
+          <div id="pixValorExibir" style="font-size:1.5rem;font-weight:800;color:var(--ouro);margin:8px 0 2px"></div>
           <div class="pix-chave" id="pixChaveExibir"></div>
         </div>
-        <button class="btn btn-outline btn-full" style="margin-top:12px" onclick="uiSalvarPix()">💾 Salvar Pix no evento</button>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:14px">
+          <button class="btn btn-primary btn-full" onclick="uiCopiarPix()">📋 Copiar código Pix (copia e cola)</button>
+          <button class="btn btn-outline btn-full" onclick="uiSalvarPix()">💾 Salvar Pix no evento</button>
+        </div>
+        <div id="pixCopiado" style="display:none;margin-top:10px;background:var(--c2);border-radius:8px;padding:10px 12px;font-size:0.72rem;word-break:break-all;color:rgba(255,255,255,0.45);line-height:1.5"></div>
       </div>
     </div>
 
@@ -710,12 +715,26 @@ async function uiGerarQR() {
   const pixStr = uiGerarPixStr(chave, nome, valor);
   _pixConfig = { chave, nome, tipo, valor, pixStr };
   document.getElementById('qrSection').style.display = 'block';
+  document.getElementById('pixValorExibir').textContent = valor ? formatBRL(valor) : '';
   document.getElementById('pixChaveExibir').textContent =
     tipo.toUpperCase() + ': ' + chave +
-    (nome  ? ' · ' + nome  : '') +
-    (valor ? ' · ' + formatBRL(valor) : '');
+    (nome  ? ' · ' + nome  : '');
+  document.getElementById('pixCopiado').style.display = 'none';
   QRCode.toCanvas(document.getElementById('qrCanvas'), pixStr,
     { width: 220, margin: 2, color: { dark:'#000000', light:'#ffffff' } });
+}
+
+async function uiCopiarPix() {
+  if (!_pixConfig?.pixStr) { showToast('⚠️ Gere o QR primeiro','warn'); return; }
+  try {
+    await navigator.clipboard.writeText(_pixConfig.pixStr);
+    showToast('✅ Código Pix copiado!','ok');
+  } catch {
+    showToast('⚠️ Não foi possível copiar','warn');
+  }
+  const el = document.getElementById('pixCopiado');
+  el.textContent = _pixConfig.pixStr;
+  el.style.display = 'block';
 }
 
 function uiGerarPixStr(chave, nome, valor) {
