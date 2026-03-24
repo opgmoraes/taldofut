@@ -712,7 +712,7 @@ async function uiGerarQR() {
   let valor   = parseFloat(document.getElementById('pixValorCampo').value) || 0;
   if (!chave) { showToast('⚠️ Informe a chave Pix','warn'); return; }
   if (!valor) valor = _eventoData?.valor || 0;
-  const pixStr = uiGerarPixStr(chave, nome, valor);
+  const pixStr = uiGerarPixStr(chave, nome, valor, tipo);
   _pixConfig = { chave, nome, tipo, valor, pixStr };
   document.getElementById('qrSection').style.display = 'block';
   document.getElementById('pixValorExibir').textContent = valor ? formatBRL(valor) : '';
@@ -747,16 +747,34 @@ async function uiCopiarPix() {
   el.style.display = 'block';
 }
 
-function uiGerarPixStr(chave, nome, valor) {
+function uiNormalizarChave(chave, tipo) {
+  chave = chave.trim();
+  if (tipo === 'cpf' || tipo === 'cnpj') {
+    // Só dígitos
+    return chave.replace(/\D/g, '');
+  }
+  if (tipo === 'telefone') {
+    // Formato +55DDD9XXXXXXXX
+    const digits = chave.replace(/\D/g, '');
+    if (digits.startsWith('55')) return '+' + digits;
+    if (digits.length === 11 || digits.length === 10) return '+55' + digits;
+    return '+' + digits;
+  }
+  // email e aleatoria: literal
+  return chave;
+}
+
+function uiGerarPixStr(chave, nome, valor, tipo) {
+  chave = uiNormalizarChave(chave, tipo || 'aleatoria');
   const f = (id, v) => id + String(v.length).padStart(2,'0') + v;
   const merch = f('26', f('00','br.gov.bcb.pix') + f('01', chave));
-  const nomeF = (nome || 'RECEBEDOR').substring(0,25).toUpperCase();
+  const nomeF = (nome || 'RECEBEDOR').normalize('NFD').replace(/[\u0300-\u036f]/g,'').substring(0,25).toUpperCase();
   const valF  = valor > 0 ? f('54', valor.toFixed(2)) : '';
   let s = f('00','01') + f('01','12') + merch + f('52','0000') + f('53','986') +
           valF + f('58','BR') + f('59', nomeF) + f('60','SAO PAULO') + f('62', f('05','***')) + '6304';
   let crc = 0xFFFF;
   for (const c of new TextEncoder().encode(s))
-    for (crc ^= c<<8, _=0; _<8; _++) crc = crc&0x8000 ? (crc<<1)^0x1021 : crc<<1;
+    for (let _=0, b=c^(crc>>8); _<8; _++) b = b&0x80 ? (b<<1)^0x1021 : b<<1, crc = (crc<<8)^b;
   return s + (crc&0xFFFF).toString(16).toUpperCase().padStart(4,'0');
 }
 
