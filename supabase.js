@@ -1,18 +1,53 @@
 /* ============================================================
-   SUPABASE.JS — Config central + helpers de Auth e DB
-   ============================================================
-   REGRA: funções públicas (getEvento, listarJogadores,
-   adicionarJogador, removerJogador, atualizarJogador)
-   NÃO exigem usuário logado — funcionam na lista.html.
-   Funções admin (criarEvento, listarEventos, deletarEvento,
-   atualizarEvento) exigem auth.
+   SUPABASE.JS
+   - Auth via SDK (@supabase/supabase-js)
+   - Queries via REST fetch direto (mais confiável com RLS)
    ============================================================ */
 
-const SUPABASE_URL  = 'https://hznamjsesogmcpxqxcpt.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6bmFtanNlc29nbWNweHF4Y3B0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzMDUwNTAsImV4cCI6MjA4OTg4MTA1MH0.EOoDbMhrpme9YdGArB1AUpwd298z-E4ov1O5R8YJg0w';
+const SB_URL  = 'https://hznamjsesogmcpxqxcpt.supabase.co';
+const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6bmFtanNlc29nbWNweHF4Y3B0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzMDUwNTAsImV4cCI6MjA4OTg4MTA1MH0.EOoDbMhrpme9YdGArB1AUpwd298z-E4ov1O5R8YJg0w';
 
+/* SDK só para Auth e Realtime */
 const { createClient } = supabase;
-const db = createClient(SUPABASE_URL, SUPABASE_ANON);
+const db = createClient(SB_URL, SB_ANON);
+
+/* ── Token da sessão atual ── */
+async function _getToken() {
+  const { data } = await db.auth.getSession();
+  return data?.session?.access_token || null;
+}
+
+/* ── Headers base ── */
+async function _headers(auth) {
+  const h = {
+    'Content-Type':  'application/json',
+    'apikey':        SB_ANON,
+    'Authorization': 'Bearer ' + (auth ? (await _getToken() || SB_ANON) : SB_ANON),
+    'Prefer':        'return=representation'
+  };
+  return h;
+}
+
+/* ── Fetch helper ── */
+async function _req(method, path, body, auth) {
+  try {
+    const res = await fetch(SB_URL + '/rest/v1/' + path, {
+      method,
+      headers: await _headers(auth),
+      body: body ? JSON.stringify(body) : undefined
+    });
+    const text = await res.text();
+    let data = null;
+    try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+    if (!res.ok) {
+      console.error('Supabase error', res.status, path, data);
+      return { data: null, error: { message: (data?.message || data?.hint || String(res.status)) } };
+    }
+    return { data, error: null };
+  } catch (e) {
+    return { data: null, error: { message: e.message } };
+  }
+}
 
 /* ============================================================
    AUTH
@@ -46,167 +81,106 @@ async function getUser() {
 }
 
 /* ============================================================
-   EVENTOS — funções ADMIN (exigem auth)
+   EVENTOS — ADMIN (autenticado)
    ============================================================ */
 async function criarEvento(campos) {
   const user = await getUser();
   if (!user) return { data: null, error: { message: 'Não autenticado' } };
-  const { data, error } = await db.from('eventos')
-    .insert({ ...campos, admin_id: user.id })
-    .select().single();
-  return { data, error };
+  const { data, error } = await _req('POST', 'eventos', { ...campos, admin_id: user.id }, true);
+  // POST retorna array, pega primeiro
+  const item = Array.isArray(data) ? data[0] : data;
+  return { data: item, error };
 }
 
 async function listarEventos() {
   const user = await getUser();
   if (!user) return { data: [], error: null };
-  const { data, error } = await db.from('eventos')
-    .select('*')
-    .eq('admin_id', user.id)
-    .order('created_at', { ascending: false });
+  const { data, error } = await _req('GET',
+    'eventos?select=*&admin_id=eq.' + user.id + '&order=created_at.desc',
+    null, true);
   return { data: data || [], error };
 }
 
 async function atualizarEvento(id, campos) {
-  const { data, error } = await db.from('eventos')
-    .update(campos).eq('id', id).select().single();
-  return { data, error };
+  const { data, error } = await _req('PATCH',
+    'eventos?id=eq.' + encodeURIComponent(id),
+    campos, true);
+  const item = Array.isArray(data) ? data[0] : data;
+  return { data: item, error };
 }
 
 async function deletarEvento(id) {
-  const { error } = await db.from('eventos').delete().eq('id', id);
+  const { error } = await _req('DELETE',
+    'eventos?id=eq.' + encodeURIComponent(id),
+    null, true);
   return { error };
 }
 
 /* ============================================================
-   EVENTOS — função PÚBLICA (não exige auth)
+   EVENTOS — PÚBLICO (sem auth, para lista.html)
    ============================================================ */
 async function getEvento(id) {
-  const { data, error } = await db.from('eventos')
-    .select('*').eq('id', id).maybeSingle();
-  return { data, error };
+  const { data, error } = await _req('GET',
+    'eventos?select=*&id=eq.' + encodeURIComponent(id),
+    null, false);
+  const item = Array.isArray(data) ? data[0] : data;
+  return { data: item || null, error };
 }
 
 /* ============================================================
-   JOGADORES — todos PÚBLICOS (não exigem auth)
+   JOGADORES — PÚBLICO
    ============================================================ */
 async function listarJogadores(eventoId) {
-  const { data, error } = await db.from('jogadores')
-    .select('*')
-    .eq('evento_id', eventoId)
-    .order('created_at', { ascending: true });
+  const { data, error } = await _req('GET',
+    'jogadores?select=*&evento_id=eq.' + encodeURIComponent(eventoId) + '&order=created_at.asc',
+    null, false);
   return { data: data || [], error };
 }
 
-async function adicionarJogador(eventoId, nome, nivel, goleiro = false) {
-  nome = nome.trim();
+async function adicionarJogador(eventoId, nome, nivel, goleiro) {
+  nome = (nome || '').trim();
   if (!nome) return { data: null, error: { message: 'nome vazio' } };
 
-  // Proteção contra duplicado (case-insensitive)
-  const { data: exist } = await db.from('jogadores')
-    .select('id')
-    .eq('evento_id', eventoId)
-    .ilike('nome', nome)
-    .maybeSingle();
-  if (exist) return { data: null, error: { message: 'duplicado' } };
+  /* Checa duplicado */
+  const { data: exist } = await _req('GET',
+    'jogadores?select=id&evento_id=eq.' + encodeURIComponent(eventoId) +
+    '&nome=ilike.' + encodeURIComponent(nome),
+    null, false);
+  if (exist && exist.length > 0) return { data: null, error: { message: 'duplicado' } };
 
-  const { data, error } = await db.from('jogadores').insert({
-    evento_id: eventoId,
+  const { data, error } = await _req('POST', 'jogadores', {
+    evento_id:  eventoId,
     nome,
-    nivel:     nivel || 1,
-    goleiro:   goleiro || false,
-    pago:      false,
+    nivel:      nivel  || 1,
+    goleiro:    goleiro || false,
+    pago:       false,
     confirmado: true
-  }).select().single();
-  return { data, error };
+  }, false);
+  const item = Array.isArray(data) ? data[0] : data;
+  return { data: item, error };
 }
 
 async function removerJogador(jogadorId) {
-  const { error } = await db.from('jogadores').delete().eq('id', jogadorId);
+  const { error } = await _req('DELETE',
+    'jogadores?id=eq.' + encodeURIComponent(jogadorId),
+    null, false);
   return { error };
 }
 
 async function atualizarJogador(jogadorId, campos) {
-  const { data, error } = await db.from('jogadores')
-    .update(campos).eq('id', jogadorId).select().single();
-  return { data, error };
+  const { data, error } = await _req('PATCH',
+    'jogadores?id=eq.' + encodeURIComponent(jogadorId),
+    campos, false);
+  const item = Array.isArray(data) ? data[0] : data;
+  return { data: item, error };
 }
 
 /* ============================================================
-   SORTEIO — equilibrado por estrelas (snake draft)
-   ============================================================ */
-function _shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-/**
- * Sorteia times equilibrados por nível.
- * Sobras (1 jogador) → time extra se ≥2, senão reserva.
- */
-function sortearTimesEquilibrado(jogadores, numTimes) {
-  const linha = jogadores.filter(j => !j.goleiro);
-  if (linha.length === 0) return { times: [], reservas: [] };
-
-  // Agrupa por nível e embaralha cada grupo
-  const ordenados = [
-    ..._shuffle(linha.filter(j => j.nivel === 3)),
-    ..._shuffle(linha.filter(j => j.nivel === 2)),
-    ..._shuffle(linha.filter(j => (j.nivel || 1) === 1))
-  ];
-
-  const totalPrincipal = Math.floor(linha.length / numTimes) * numTimes;
-  const principal = ordenados.slice(0, totalPrincipal);
-  const sobras    = ordenados.slice(totalPrincipal);
-
-  // Snake draft
-  const times = Array.from({ length: numTimes }, (_, i) => ({
-    nome: `Time ${String.fromCharCode(65 + i)}`,
-    cor:  CORES_TIMES[i % CORES_TIMES.length],
-    jogadores: [],
-    totalEstrelas: 0
-  }));
-
-  let dir = 1, idx = 0;
-  principal.forEach((j, pos) => {
-    times[idx].jogadores.push(j);
-    times[idx].totalEstrelas += (j.nivel || 1);
-    if (pos % numTimes === numTimes - 1) dir *= -1;
-    idx = Math.max(0, Math.min(numTimes - 1, idx + dir));
-  });
-
-  // Trata sobras
-  let reservas = [];
-  if (sobras.length >= 2) {
-    times.push({
-      nome: `Time ${String.fromCharCode(65 + numTimes)}`,
-      cor:  CORES_TIMES[numTimes % CORES_TIMES.length],
-      jogadores: sobras,
-      totalEstrelas: sobras.reduce((s, j) => s + (j.nivel || 1), 0),
-      extra: true
-    });
-  } else if (sobras.length === 1) {
-    reservas = sobras;
-  }
-
-  return { times, reservas };
-}
-
-const CORES_TIMES = [
-  '#16a34a','#2563eb','#d97706','#dc2626',
-  '#7c3aed','#0891b2','#ea580c','#db2777'
-];
-
-/* ============================================================
-   REALTIME
+   REALTIME (SDK)
    ============================================================ */
 function subscreverEvento(eventoId, callback) {
   return db
-    .channel('jogadores_' + eventoId)
+    .channel('jog_' + eventoId)
     .on('postgres_changes', {
       event: '*', schema: 'public', table: 'jogadores',
       filter: 'evento_id=eq.' + eventoId
@@ -231,7 +205,9 @@ function formatBRL(v) {
 
 function renderStars(nivel) {
   nivel = nivel || 1;
-  return [1,2,3].map(i => `<span class="star ${i <= nivel ? 'filled' : ''}">★</span>`).join('');
+  return [1,2,3].map(i =>
+    '<span class="star ' + (i <= nivel ? 'filled' : '') + '">★</span>'
+  ).join('');
 }
 
 function showToast(msg, tipo) {
@@ -240,7 +216,6 @@ function showToast(msg, tipo) {
   if (!t) {
     t = document.createElement('div');
     t.id = 'toast';
-    t.className = 'toast';
     document.body.appendChild(t);
   }
   t.textContent = msg;
