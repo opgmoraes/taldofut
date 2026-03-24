@@ -16,9 +16,7 @@
   <span class="loading-txt">Carregando...</span>
 </div>
 
-<!-- ══════════════════════════════
-     TELA AUTH
-     ══════════════════════════════ -->
+<!-- AUTH -->
 <div id="telaAuth" style="display:none">
   <div class="auth-wrap">
     <div class="auth-card">
@@ -27,21 +25,19 @@
         <h1>TAL DO FUT</h1>
         <p>PAINEL DO ADMINISTRADOR</p>
       </div>
-
       <div class="auth-tabs">
         <button class="auth-tab active" onclick="authTab('login')">Entrar</button>
         <button class="auth-tab" onclick="authTab('cadastro')">Cadastrar</button>
       </div>
 
-      <!-- Login -->
       <form id="formLogin" onsubmit="event.preventDefault(); fazerLogin()">
         <div class="field-group" style="margin-bottom:12px">
-          <label for="loginEmail">Email</label>
-          <input type="email" id="loginEmail" name="email" autocomplete="email" placeholder="seu@email.com" required/>
+          <label>Email</label>
+          <input type="email" id="loginEmail" autocomplete="email" placeholder="seu@email.com" required/>
         </div>
         <div class="field-group" style="margin-bottom:20px">
-          <label for="loginSenha">Senha</label>
-          <input type="password" id="loginSenha" name="password" autocomplete="current-password" placeholder="••••••••" required/>
+          <label>Senha</label>
+          <input type="password" id="loginSenha" autocomplete="current-password" placeholder="••••••••" required/>
         </div>
         <button type="submit" class="btn btn-primary btn-full">🔐 Entrar</button>
         <div class="auth-divider">ou</div>
@@ -50,31 +46,29 @@
         </div>
       </form>
 
-      <!-- Cadastro -->
       <form id="formCadastro" style="display:none" onsubmit="event.preventDefault(); fazerCadastro()">
         <div class="field-group" style="margin-bottom:12px">
-          <label for="cadEmail">Email</label>
-          <input type="email" id="cadEmail" name="email" autocomplete="email" placeholder="seu@email.com" required/>
+          <label>Email</label>
+          <input type="email" id="cadEmail" autocomplete="email" placeholder="seu@email.com" required/>
         </div>
         <div class="field-group" style="margin-bottom:12px">
-          <label for="cadSenha">Senha</label>
-          <input type="password" id="cadSenha" name="password" autocomplete="new-password" placeholder="mínimo 6 caracteres" required minlength="6"/>
+          <label>Senha</label>
+          <input type="password" id="cadSenha" autocomplete="new-password" placeholder="mínimo 6 caracteres" required minlength="6"/>
         </div>
         <div class="field-group" style="margin-bottom:20px">
-          <label for="cadSenha2">Confirmar senha</label>
-          <input type="password" id="cadSenha2" name="confirm-password" autocomplete="new-password" placeholder="repita a senha" required minlength="6"/>
+          <label>Confirmar senha</label>
+          <input type="password" id="cadSenha2" autocomplete="new-password" placeholder="repita a senha" required minlength="6"/>
         </div>
         <button type="submit" class="btn btn-primary btn-full">✅ Criar conta</button>
       </form>
 
-      <!-- Reset -->
       <form id="formReset" style="display:none" onsubmit="event.preventDefault(); enviarReset()">
         <p style="font-size:0.85rem;color:rgba(255,255,255,0.45);margin-bottom:16px;text-align:center">
-          Informe seu email e enviaremos um link para redefinir sua senha.
+          Informe seu email para receber o link de redefinição.
         </p>
         <div class="field-group" style="margin-bottom:20px">
-          <label for="resetEmail">Email</label>
-          <input type="email" id="resetEmail" name="email" autocomplete="email" placeholder="seu@email.com" required/>
+          <label>Email</label>
+          <input type="email" id="resetEmail" autocomplete="email" placeholder="seu@email.com" required/>
         </div>
         <button type="submit" class="btn btn-primary btn-full">📧 Enviar link</button>
         <div class="auth-divider">ou</div>
@@ -86,11 +80,8 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════
-     PAINEL PRINCIPAL
-     ══════════════════════════════ -->
+<!-- PAINEL -->
 <div id="telaPainel" style="display:none">
-
   <header class="header">
     <span class="header-icon">⚽</span>
     <div><h1>Tal do Fut</h1><p>Painel do Administrador</p></div>
@@ -125,18 +116,23 @@
       <div class="section">
         <div class="section-title">📋 Criar Novo Evento</div>
         <div class="form-grid">
-          <div class="field-group"><label>Nome</label><input type="text" id="evNome" placeholder="Fut de quinta-feira"/></div>
-          <div class="field-group"><label>Data</label><input type="date" id="evData"/></div>
-          <div class="field-group"><label>Horário</label><input type="text" id="evHora" placeholder="20:00"/></div>
-          <div class="field-group"><label>Local</label><input type="text" id="evLocal" placeholder="Campo do Zé"/></div>
-          <div class="field-group"><label>Valor por pessoa (R$)</label><input type="number" id="evValor" placeholder="0,00" min="0" step="0.01"/></div>
-          <div class="field-group"><label>Mínimo de jogadores</label><input type="number" id="evMinimo" value="10" min="2" max="50"/></div>
+          <div class="field-group"><label>Nome</label>
+            <input type="text" id="evNome" placeholder="Fut de quinta-feira"/></div>
+          <div class="field-group"><label>Data</label>
+            <input type="date" id="evData"/></div>
+          <div class="field-group"><label>Horário</label>
+            <input type="text" id="evHora" placeholder="20:00"/></div>
+          <div class="field-group"><label>Local</label>
+            <input type="text" id="evLocal" placeholder="Campo do Zé"/></div>
+          <div class="field-group"><label>Valor por pessoa (R$)</label>
+            <input type="number" id="evValor" placeholder="0,00" min="0" step="0.01"/></div>
+          <div class="field-group"><label>Mínimo de jogadores</label>
+            <input type="number" id="evMinimo" value="10" min="2"/></div>
         </div>
         <div style="margin-top:16px">
           <button class="btn btn-primary btn-full" onclick="uiCriarEvento()">✅ Criar Evento</button>
         </div>
       </div>
-
       <div id="linkSection" class="section" style="display:none">
         <div class="section-title">🔗 Link dos Jogadores</div>
         <p style="font-size:0.83rem;color:rgba(255,255,255,0.45);margin-bottom:8px">Envie este link no grupo:</p>
@@ -153,14 +149,15 @@
       <div class="stats-bar">
         <div class="stat-card"><div class="stat-number" id="sTotal">0</div><div class="stat-label">Jogadores</div></div>
         <div class="stat-card"><div class="stat-number" id="sPagaram">0</div><div class="stat-label">Pagaram</div></div>
-        <div class="stat-card"><div class="stat-number" id="sArrecadado" style="font-size:1.3rem">R$0</div><div class="stat-label">Arrecadado</div></div>
+        <div class="stat-card"><div class="stat-number" id="sArrecadado" style="font-size:1.2rem">R$0</div><div class="stat-label">Arrecadado</div></div>
         <div class="stat-card"><div class="stat-number" id="sGoleiros">0</div><div class="stat-label">Goleiros</div></div>
       </div>
 
       <div class="section">
         <div class="section-title">➕ Adicionar Jogador</div>
         <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end">
-          <input type="text" id="nomeJog" placeholder="Nome do jogador" style="flex:1;min-width:130px"
+          <input type="text" id="nomeJog" placeholder="Nome do jogador"
+            style="flex:1;min-width:130px"
             onkeydown="if(event.key==='Enter') uiAdminAdd()"/>
           <div>
             <div style="font-size:0.68rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:5px">Nível</div>
@@ -179,7 +176,9 @@
 
       <div class="section">
         <div class="section-title">📋 Lista Completa</div>
-        <div id="playerList"><div class="empty-state"><span class="emoji">🏟</span><p>Selecione ou crie um evento.</p></div></div>
+        <div id="playerList">
+          <div class="empty-state"><span class="emoji">🏟</span><p>Selecione ou crie um evento.</p></div>
+        </div>
         <div class="divider"></div>
         <button class="btn btn-danger btn-sm" onclick="uiLimparLista()">🗑 Limpar lista</button>
       </div>
@@ -195,15 +194,15 @@
             <input type="number" id="numTimes" value="2" min="2" max="8" oninput="uiRegrasInfo()"/>
           </div>
           <div class="field-group">
-            <label>Mínimo de jogadores por time</label>
+            <label>Mín. jogadores por time</label>
             <input type="number" id="minPorTime" value="4" min="1" max="20" oninput="uiRegrasInfo()"/>
           </div>
         </div>
-        <div id="regrasInfo" class="alerta alerta-ok" style="margin-bottom:16px;display:none"></div>
+        <div id="regrasInfo" class="alerta" style="display:none;margin-bottom:16px"></div>
         <button class="btn btn-gold btn-full" onclick="uiSortear()">🎲 Sortear Times!</button>
         <div id="goleirosSection" style="display:none;margin-top:16px">
           <div class="goleiros-wrap">
-            <div class="goleiros-label">🧤 Goleiros (fora do sorteio de linha)</div>
+            <div class="goleiros-label">🧤 Goleiros (fora do sorteio)</div>
             <div id="goleirosChips"></div>
           </div>
         </div>
@@ -229,18 +228,12 @@
               <option value="aleatoria">Chave aleatória</option>
             </select>
           </div>
-          <div class="field-group">
-            <label>Chave Pix</label>
-            <input type="text" id="pixChave" placeholder="Ex: 11999999999"/>
-          </div>
-          <div class="field-group">
-            <label>Nome do recebedor</label>
-            <input type="text" id="pixNome" placeholder="Ex: João Silva"/>
-          </div>
-          <div class="field-group">
-            <label>Valor (R$) — opcional</label>
-            <input type="number" id="pixValorCampo" placeholder="Deixe vazio p/ usar o do evento" min="0" step="0.01"/>
-          </div>
+          <div class="field-group"><label>Chave Pix</label>
+            <input type="text" id="pixChave" placeholder="Ex: 11999999999"/></div>
+          <div class="field-group"><label>Nome do recebedor</label>
+            <input type="text" id="pixNome" placeholder="Ex: João Silva"/></div>
+          <div class="field-group"><label>Valor (R$) — opcional</label>
+            <input type="number" id="pixValorCampo" placeholder="Deixe vazio p/ usar o do evento" min="0" step="0.01"/></div>
         </div>
         <div style="margin-top:16px">
           <button class="btn btn-primary btn-full" onclick="uiGerarQR()">📱 Gerar QR Code</button>
@@ -251,9 +244,8 @@
         <div class="pix-box">
           <canvas id="qrCanvas"></canvas>
           <div class="pix-chave" id="pixChaveExibir"></div>
-          <p style="font-size:0.8rem;color:rgba(255,255,255,0.4);margin-top:8px">Os jogadores verão este QR na área deles</p>
         </div>
-        <button class="btn btn-outline btn-full" style="margin-top:12px" onclick="uiSalvarPix()">💾 Salvar configuração Pix no evento</button>
+        <button class="btn btn-outline btn-full" style="margin-top:12px" onclick="uiSalvarPix()">💾 Salvar Pix no evento</button>
       </div>
     </div>
 
@@ -261,21 +253,18 @@
     <div id="tab-whats" class="tab-panel">
       <div class="section">
         <div class="section-title">📲 Lembrete WhatsApp</div>
-        <p style="font-size:0.85rem;color:rgba(255,255,255,0.45);margin-bottom:16px">
-          Abre o WhatsApp com a mensagem de lembrete pronta para o grupo.
-        </p>
         <div class="field-group" style="margin-bottom:14px">
-          <label>Número do grupo ou contato</label>
-          <input type="tel" id="whatsNumero" placeholder="5511999999999 (com DDI e DDD, sem +)"/>
+          <label>Número (com DDI e DDD, sem +)</label>
+          <input type="tel" id="whatsNumero" placeholder="5511999999999"/>
         </div>
         <div class="field-group" style="margin-bottom:16px">
           <label>Mensagem personalizada (opcional)</label>
-          <textarea id="whatsMsg" placeholder="Deixe vazio para usar a mensagem padrão..." oninput="uiPreviewWhats()"></textarea>
+          <textarea id="whatsMsg" placeholder="Deixe vazio para usar a mensagem padrão..."></textarea>
         </div>
-        <button class="btn btn-whatsapp btn-full" onclick="uiAbrirWhatsApp()">📲 Abrir WhatsApp com lembrete</button>
+        <button class="btn btn-whatsapp btn-full" onclick="uiAbrirWhatsApp()">📲 Abrir WhatsApp</button>
       </div>
       <div class="section">
-        <div class="section-title">📋 Preview da mensagem</div>
+        <div class="section-title">📋 Preview</div>
         <div id="msgPreview" style="background:var(--c2);border-radius:10px;padding:16px;font-size:0.88rem;white-space:pre-wrap;color:rgba(255,255,255,0.7);line-height:1.6">
           Selecione um evento para ver o preview.
         </div>
@@ -287,40 +276,37 @@
 
 <script src="supabase.js"></script>
 <script>
-/* ═══════════════════════════════════════════════════
-   ADMIN.JS — todas as funções de UI prefixadas "ui"
-   para NÃO conflitar com supabase.js
-   ═══════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════
+   ADMIN — funções prefixadas "ui" para não
+   conflitar com supabase.js
+   ══════════════════════════════════════════════ */
 
-let eventoAtivo    = null;
-let jogadoresCache = [];
-let nivelAdminSel  = 1;
-let timesGerados   = null;
-let realtimeSub    = null;
-let pixConfig      = null;
+let _eventoAtivo  = null;   // ID do evento selecionado
+let _jogadores    = [];     // cache dos jogadores
+let _eventoData   = null;   // cache dos dados do evento
+let _nivelSel     = 1;
+let _timesGerados = null;
+let _pixConfig    = null;
+let _realtimeSub  = null;
 
-/* ── Erro auth em português ── */
+/* ── Auth helpers ── */
 function traduzErro(msg) {
   if (!msg) return 'Erro desconhecido.';
-  if (msg.includes('Invalid login credentials'))    return '❌ Email ou senha incorretos.';
-  if (msg.includes('Email not confirmed'))           return '⚠️ Confirme seu email antes de entrar.';
-  if (msg.includes('User already registered'))       return '⚠️ Este email já tem conta. Faça login.';
-  if (msg.includes('Password should be'))            return '⚠️ Senha mínimo 6 caracteres.';
+  if (msg.includes('Invalid login credentials'))  return '❌ Email ou senha incorretos.';
+  if (msg.includes('Email not confirmed'))         return '⚠️ Confirme seu email antes de entrar.';
+  if (msg.includes('User already registered'))     return '⚠️ Este email já tem conta. Faça login.';
   if (msg.includes('rate limit') || msg.includes('429') || msg.includes('over_email'))
-    return '⏳ Muitas tentativas. Aguarde alguns minutos.';
-  if (msg.includes('network') || msg.includes('fetch')) return '📡 Erro de conexão.';
+                                                   return '⏳ Muitas tentativas. Aguarde alguns minutos.';
+  if (msg.includes('Password should be'))          return '⚠️ Senha mínimo 6 caracteres.';
   return msg;
 }
 
-/* ══════════════════════════
-   AUTH
-   ══════════════════════════ */
 function authTab(t) {
-  document.getElementById('formLogin').style.display    = t==='login'    ? 'block' : 'none';
-  document.getElementById('formCadastro').style.display = t==='cadastro' ? 'block' : 'none';
-  document.getElementById('formReset').style.display    = t==='reset'    ? 'block' : 'none';
-  document.querySelectorAll('.auth-tab').forEach((b,i) =>
-    b.classList.toggle('active', (i===0 && t==='login') || (i===1 && t==='cadastro'))
+  document.getElementById('formLogin').style.display    = t === 'login'    ? 'block' : 'none';
+  document.getElementById('formCadastro').style.display = t === 'cadastro' ? 'block' : 'none';
+  document.getElementById('formReset').style.display    = t === 'reset'    ? 'block' : 'none';
+  document.querySelectorAll('.auth-tab').forEach((b, i) =>
+    b.classList.toggle('active', (i===0&&t==='login') || (i===1&&t==='cadastro'))
   );
 }
 
@@ -328,7 +314,7 @@ async function fazerLogin() {
   const email = document.getElementById('loginEmail').value.trim();
   const senha  = document.getElementById('loginSenha').value;
   if (!email || !senha) { showToast('⚠️ Preencha email e senha','warn'); return; }
-  setLoading(true,'Entrando...');
+  setLoading(true, 'Entrando...');
   const { error } = await authSignIn(email, senha);
   setLoading(false);
   if (error) { showToast(traduzErro(error.message),'erro'); return; }
@@ -342,17 +328,12 @@ async function fazerCadastro() {
   if (!email || !senha)  { showToast('⚠️ Preencha todos os campos','warn'); return; }
   if (senha !== senha2)  { showToast('⚠️ As senhas não coincidem','warn'); return; }
   if (senha.length < 6)  { showToast('⚠️ Senha mínimo 6 caracteres','warn'); return; }
-  setLoading(true,'Criando conta...');
+  setLoading(true, 'Criando conta...');
   const { data, error } = await authSignUp(email, senha);
   setLoading(false);
   if (error) { showToast(traduzErro(error.message),'erro'); return; }
-  if (data?.session) {
-    showToast('✅ Conta criada! Bem-vindo!','ok');
-    await iniciarPainel();
-  } else {
-    showToast('📧 Verifique seu email para confirmar.','ok');
-    authTab('login');
-  }
+  if (data?.session) { showToast('✅ Conta criada!','ok'); await iniciarPainel(); }
+  else { showToast('📧 Verifique seu email para confirmar.','ok'); authTab('login'); }
 }
 
 async function enviarReset() {
@@ -362,7 +343,7 @@ async function enviarReset() {
   const { error } = await authResetPassword(email);
   setLoading(false);
   if (error) { showToast(traduzErro(error.message),'erro'); return; }
-  showToast('📧 Link enviado! Verifique seu email.','ok');
+  showToast('📧 Link enviado!','ok');
   authTab('login');
 }
 
@@ -371,18 +352,13 @@ async function fazerLogout() {
   location.reload();
 }
 
-/* ══════════════════════════
-   INIT
-   ══════════════════════════ */
+/* ── Init ── */
 async function init() {
   setLoading(true);
   const user = await getUser();
   setLoading(false);
-  if (user) {
-    await iniciarPainel();
-  } else {
-    document.getElementById('telaAuth').style.display = 'block';
-  }
+  if (user) await iniciarPainel();
+  else document.getElementById('telaAuth').style.display = 'block';
 }
 
 async function iniciarPainel() {
@@ -391,16 +367,16 @@ async function iniciarPainel() {
   document.getElementById('telaPainel').style.display = 'block';
   document.getElementById('headerEmail').textContent   = user.email;
   await uiPopularSelect();
-  const salvo = localStorage.getItem('eventoAdmin_'+user.id);
+  const salvo = localStorage.getItem('evtAdmin_' + user.id);
   if (salvo) {
     document.getElementById('eventoSelect').value = salvo;
-    await uiTrocarEvento();
+    _eventoAtivo = salvo;
+    uiMostrarLink();
+    await uiRenderTudo();
   }
 }
 
-/* ══════════════════════════
-   TABS
-   ══════════════════════════ */
+/* ── Tabs ── */
 function uiTab(id, btn) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -408,43 +384,43 @@ function uiTab(id, btn) {
   btn.classList.add('active');
   if (id === 'tab-jogadores') uiRenderJogadores();
   if (id === 'tab-times')     uiRegrasInfo();
-  if (id === 'tab-whats')     uiPreviewWhats();
   if (id === 'tab-pix')       uiCarregarPix();
+  if (id === 'tab-whats')     uiPreviewWhats();
 }
 
-/* ══════════════════════════
-   EVENTOS
-   ══════════════════════════ */
+/* ── Select eventos ── */
 async function uiPopularSelect() {
   const sel = document.getElementById('eventoSelect');
   const ant = sel.value;
-  const { data } = await listarEventos();           // ← supabase.js
+  const { data } = await listarEventos();
   sel.innerHTML = '<option value="">— Selecione ou crie um evento —</option>';
   (data || []).forEach(e => {
-    const opt = document.createElement('option');
-    opt.value = e.id;
-    opt.textContent = e.nome + (e.data ? ' · ' + e.data : '');
-    sel.appendChild(opt);
+    const o = document.createElement('option');
+    o.value = e.id;
+    o.textContent = e.nome + (e.data ? ' · ' + e.data : '');
+    sel.appendChild(o);
   });
   if (ant) sel.value = ant;
 }
 
 async function uiTrocarEvento() {
-  eventoAtivo = document.getElementById('eventoSelect').value || null;
+  _eventoAtivo = document.getElementById('eventoSelect').value || null;
+  _eventoData  = null;
+  _jogadores   = [];
   const user = await getUser();
-  if (user) localStorage.setItem('eventoAdmin_'+user.id, eventoAtivo || '');
-  if (realtimeSub) { db.removeChannel(realtimeSub); realtimeSub = null; }
-  if (!eventoAtivo) {
-    uiMostrarLink(false);
+  if (user) localStorage.setItem('evtAdmin_' + user.id, _eventoAtivo || '');
+  if (_realtimeSub) { db.removeChannel(_realtimeSub); _realtimeSub = null; }
+  uiMostrarLink();
+  if (!_eventoAtivo) {
     document.getElementById('alertaPoucos').style.display = 'none';
     uiRenderJogadores();
     return;
   }
-  uiMostrarLink(true);
-  realtimeSub = subscreverEvento(eventoAtivo, () => uiRenderTudo()); // ← supabase.js
+  _realtimeSub = subscreverEvento(_eventoAtivo, () => uiRenderTudo());
   await uiRenderTudo();
 }
 
+/* ── Criar evento ── */
 async function uiCriarEvento() {
   const nome  = document.getElementById('evNome').value.trim();
   const data  = document.getElementById('evData').value;
@@ -453,90 +429,64 @@ async function uiCriarEvento() {
   const valor = parseFloat(document.getElementById('evValor').value) || 0;
   const min   = parseInt(document.getElementById('evMinimo').value) || 10;
   if (!nome) { showToast('⚠️ Nome do evento obrigatório','warn'); return; }
-
-  setLoading(true,'Criando evento...');
-  const id = gerarId();                              // ← supabase.js
-  const { error } = await criarEvento({ id, nome, data, hora, local, valor, minimo_jogadores: min }); // ← supabase.js
+  setLoading(true, 'Criando evento...');
+  const id = gerarId();
+  const { data: criado, error } = await criarEvento({ id, nome, data, hora, local, valor, minimo_jogadores: min });
   setLoading(false);
   if (error) { showToast('Erro: ' + error.message,'erro'); return; }
-
+  _eventoAtivo = id;
   await uiPopularSelect();
   document.getElementById('eventoSelect').value = id;
-  eventoAtivo = id;
-  uiMostrarLink(true);
+  uiMostrarLink();
   await uiRenderTudo();
   showToast('✅ Evento criado!','ok');
   ['evNome','evData','evHora','evLocal','evValor'].forEach(i => document.getElementById(i).value = '');
 }
 
 async function uiDeletarEvento() {
-  if (!eventoAtivo) { showToast('Nenhum evento selecionado','warn'); return; }
+  if (!_eventoAtivo) { showToast('Nenhum evento selecionado','warn'); return; }
   if (!confirm('Excluir este evento e todos os jogadores?')) return;
   setLoading(true);
-  await deletarEvento(eventoAtivo);                  // ← supabase.js
-  eventoAtivo = null;
+  await deletarEvento(_eventoAtivo);
+  _eventoAtivo = null; _eventoData = null; _jogadores = [];
   document.getElementById('eventoSelect').value = '';
-  uiMostrarLink(false);
+  uiMostrarLink();
+  document.getElementById('alertaPoucos').style.display = 'none';
   await uiPopularSelect();
   uiRenderJogadores();
   setLoading(false);
   showToast('🗑 Evento excluído','ok');
 }
 
-function uiMostrarLink(show) {
+function uiMostrarLink() {
   const s = document.getElementById('linkSection');
-  if (!show || !eventoAtivo) { s.style.display = 'none'; return; }
-  const url = 'https://opgmoraes.github.io/taldofut/lista.html?id=' + eventoAtivo;
+  if (!_eventoAtivo) { s.style.display = 'none'; return; }
+  const url = 'https://opgmoraes.github.io/taldofut/lista.html?id=' + _eventoAtivo;
   document.getElementById('linkTexto').textContent = url;
   document.getElementById('linkAbrir').href = url;
   s.style.display = 'block';
 }
 
 async function uiCopiarLink() {
-  const url = document.getElementById('linkTexto').textContent;
-  try { await navigator.clipboard.writeText(url); showToast('✅ Link copiado!','ok'); }
-  catch { showToast('Não foi possível copiar','erro'); }
+  try {
+    await navigator.clipboard.writeText(document.getElementById('linkTexto').textContent);
+    showToast('✅ Link copiado!','ok');
+  } catch { showToast('Não foi possível copiar','erro'); }
 }
 
-/* ══════════════════════════
-   JOGADORES
-   ══════════════════════════ */
-function uiSetNivel(n) {
-  nivelAdminSel = n;
-  document.querySelectorAll('#nivelAdmin .nivel-btn').forEach(b =>
-    b.classList.toggle('active', parseInt(b.dataset.n) <= n)
-  );
-}
-
-async function uiAdminAdd() {
-  if (!eventoAtivo) { showToast('Selecione um evento','warn'); return; }
-  const nome    = document.getElementById('nomeJog').value;
-  const goleiro = document.getElementById('isGoleiroAdmin').checked;
-  setLoading(true,'Adicionando...');
-  const { error } = await adicionarJogador(eventoAtivo, nome, nivelAdminSel, goleiro); // ← supabase.js
-  setLoading(false);
-  if (error?.message === 'duplicado') { showToast('⚠️ Nome já está na lista!','warn'); return; }
-  if (error) { showToast('Erro: ' + error.message,'erro'); return; }
-  document.getElementById('nomeJog').value = '';
-  document.getElementById('isGoleiroAdmin').checked = false;
-  await uiRenderTudo();
-  showToast('✅ Jogador adicionado!','ok');
-}
-
-async function uiLimparLista() {
-  if (!eventoAtivo) return;
-  if (!confirm('Remover todos os jogadores?')) return;
-  setLoading(true);
-  for (const j of jogadoresCache) await removerJogador(j.id); // ← supabase.js
-  setLoading(false);
-  await uiRenderTudo();
-  showToast('🗑 Lista limpa','ok');
-}
-
+/* ── Render central (único ponto de busca) ── */
 async function uiRenderTudo() {
-  if (!eventoAtivo) return;
-  const { data } = await listarJogadores(eventoAtivo); // ← supabase.js
-  jogadoresCache = data || [];
+  if (!_eventoAtivo) return;
+
+  // Busca evento e jogadores em paralelo
+  const [evtRes, jogRes] = await Promise.all([
+    getEvento(_eventoAtivo),
+    listarJogadores(_eventoAtivo)
+  ]);
+
+  _eventoData = evtRes.data || null;
+  _jogadores  = jogRes.data || [];
+
   uiRenderStats();
   uiRenderJogadores();
   uiChecarAlerta();
@@ -544,84 +494,115 @@ async function uiRenderTudo() {
   uiPreviewWhats();
 }
 
-async function uiRenderStats() {
-  const j      = jogadoresCache;
-  const pagaram = j.filter(x => x.pago).length;
-  document.getElementById('sTotal').textContent    = j.length;
+/* ── Stats ── */
+function uiRenderStats() {
+  const pagaram = _jogadores.filter(j => j.pago).length;
+  document.getElementById('sTotal').textContent    = _jogadores.length;
   document.getElementById('sPagaram').textContent  = pagaram;
-  document.getElementById('sGoleiros').textContent = j.filter(x => x.goleiro).length;
-  const { data: evt } = await getEvento(eventoAtivo); // ← supabase.js
-  if (evt) document.getElementById('sArrecadado').textContent = formatBRL(pagaram * (evt.valor || 0));
+  document.getElementById('sGoleiros').textContent = _jogadores.filter(j => j.goleiro).length;
+  document.getElementById('sArrecadado').textContent = formatBRL(pagaram * (_eventoData?.valor || 0));
+}
+
+/* ── Jogadores ── */
+function uiSetNivel(n) {
+  _nivelSel = n;
+  document.querySelectorAll('#nivelAdmin .nivel-btn').forEach(b =>
+    b.classList.toggle('active', parseInt(b.dataset.n) <= n)
+  );
+}
+
+async function uiAdminAdd() {
+  if (!_eventoAtivo) { showToast('Selecione um evento','warn'); return; }
+  const nome    = document.getElementById('nomeJog').value;
+  const goleiro = document.getElementById('isGoleiroAdmin').checked;
+  setLoading(true, 'Adicionando...');
+  const { error } = await adicionarJogador(_eventoAtivo, nome, _nivelSel, goleiro);
+  setLoading(false);
+  if (error?.message === 'duplicado') { showToast('⚠️ Nome já está na lista!','warn'); return; }
+  if (error) { showToast('Erro: ' + error.message,'erro'); return; }
+  document.getElementById('nomeJog').value = '';
+  document.getElementById('isGoleiroAdmin').checked = false;
+  await uiRenderTudo();
+  showToast('✅ Adicionado!','ok');
+}
+
+async function uiLimparLista() {
+  if (!_eventoAtivo || !_jogadores.length) return;
+  if (!confirm('Remover todos os jogadores?')) return;
+  setLoading(true);
+  await Promise.all(_jogadores.map(j => removerJogador(j.id)));
+  setLoading(false);
+  await uiRenderTudo();
+  showToast('🗑 Lista limpa','ok');
 }
 
 function uiRenderJogadores() {
-  const container = document.getElementById('playerList');
-  if (!eventoAtivo || !jogadoresCache.length) {
-    container.innerHTML = '<div class="empty-state"><span class="emoji">👥</span><p>Nenhum jogador ainda.</p></div>';
+  const el = document.getElementById('playerList');
+  if (!_eventoAtivo || !_jogadores.length) {
+    el.innerHTML = '<div class="empty-state"><span class="emoji">👥</span><p>Nenhum jogador ainda.</p></div>';
     return;
   }
-  container.innerHTML = jogadoresCache.map((j, i) => `
+  el.innerHTML = _jogadores.map((j, i) => `
     <div class="player-item">
       <span class="player-num">${i+1}</span>
       <span class="player-nome">${j.nome}</span>
       <div class="nivel-row" style="gap:2px">
-        ${[1,2,3].map(n => `<button class="nivel-btn ${n<=(j.nivel||1)?'active':''}" onclick="uiMudarNivel('${j.id}',${n})">★</button>`).join('')}
+        ${[1,2,3].map(n =>
+          `<button class="nivel-btn ${n<=(j.nivel||1)?'active':''}"
+            onclick="uiMudarNivel('${j.id}',${n})">★</button>`
+        ).join('')}
       </div>
-      ${j.goleiro ? '<span class="badge badge-goleiro">🧤 Goleiro</span>' : ''}
+      ${j.goleiro ? '<span class="badge badge-goleiro">🧤</span>' : ''}
       <span class="badge ${j.pago?'badge-pago':'badge-pendente'}">${j.pago?'✅ Pago':'⏳ Pendente'}</span>
       <div class="player-actions">
-        <button class="btn btn-outline btn-sm" onclick="uiTogglePag('${j.id}',${j.pago})">${j.pago?'↩':'💰'}</button>
-        <button class="btn btn-outline btn-sm btn-icon" onclick="uiToggleGol('${j.id}',${j.goleiro})" title="Goleiro">🧤</button>
-        <button class="btn btn-danger btn-sm btn-icon" onclick="uiRemover('${j.id}','${j.nome.replace(/'/g,"\\'")}')">✕</button>
+        <button class="btn btn-outline btn-sm" onclick="uiTogglePag('${j.id}',${j.pago})">
+          ${j.pago ? '↩' : '💰'}
+        </button>
+        <button class="btn btn-outline btn-sm btn-icon" onclick="uiToggleGol('${j.id}',${j.goleiro})">🧤</button>
+        <button class="btn btn-danger btn-sm btn-icon"
+          onclick="uiRemover('${j.id}','${j.nome.replace(/'/g,"\\'")}')">✕</button>
       </div>
     </div>
   `).join('');
 }
 
 async function uiTogglePag(id, atual) {
-  await atualizarJogador(id, { pago: !atual }); // ← supabase.js
+  await atualizarJogador(id, { pago: !atual });
   await uiRenderTudo();
 }
-
 async function uiToggleGol(id, atual) {
-  await atualizarJogador(id, { goleiro: !atual }); // ← supabase.js
+  await atualizarJogador(id, { goleiro: !atual });
   await uiRenderTudo();
 }
-
 async function uiMudarNivel(id, nivel) {
-  await atualizarJogador(id, { nivel }); // ← supabase.js
+  await atualizarJogador(id, { nivel });
   await uiRenderTudo();
 }
-
 async function uiRemover(id, nome) {
-  if (!confirm(`Remover ${nome}?`)) return;
-  await removerJogador(id); // ← supabase.js
+  if (!confirm('Remover ' + nome + '?')) return;
+  await removerJogador(id);
   await uiRenderTudo();
   showToast('🗑 ' + nome + ' removido','ok');
 }
 
-async function uiChecarAlerta() {
-  if (!eventoAtivo) return;
-  const { data: evt } = await getEvento(eventoAtivo); // ← supabase.js
-  const min = evt?.minimo_jogadores || 10;
+function uiChecarAlerta() {
+  const min = _eventoData?.minimo_jogadores || 10;
   const el  = document.getElementById('alertaPoucos');
-  if (jogadoresCache.length < min) {
-    el.innerHTML = `⚠️ Poucos jogadores! ${jogadoresCache.length} de ${min} recomendados.`;
+  if (_jogadores.length < min) {
+    el.innerHTML = `⚠️ Poucos jogadores! ${_jogadores.length} de ${min} recomendados.`;
     el.style.display = 'flex';
   } else {
     el.style.display = 'none';
   }
 }
 
-/* ══════════════════════════
-   TIMES
-   ══════════════════════════ */
+/* ── Times ── */
 function uiRegrasInfo() {
   const el = document.getElementById('regrasInfo');
-  if (!eventoAtivo || !jogadoresCache.length) { el.style.display='none'; return; }
+  if (!_eventoAtivo || !_jogadores.length) { el.style.display = 'none'; return; }
   const n     = parseInt(document.getElementById('numTimes').value) || 2;
   const min   = parseInt(document.getElementById('minPorTime').value) || 4;
-  const linha = jogadoresCache.filter(j => !j.goleiro).length;
+  const linha = _jogadores.filter(j => !j.goleiro).length;
   el.style.display = 'flex';
   if (linha < n * min) {
     el.className = 'alerta alerta-warn';
@@ -629,79 +610,69 @@ function uiRegrasInfo() {
   } else {
     const sobra = linha % n;
     el.className = 'alerta alerta-ok';
-    el.textContent = `✅ ${linha} de linha → ${n} times com ~${Math.floor(linha/n)} jogadores${sobra ? `. ${sobra} vão para time extra` : ''}.`;
+    el.textContent = `✅ ${linha} de linha → ${n} times com ~${Math.floor(linha/n)} jogadores` +
+      (sobra ? `. ${sobra} vão para time extra.` : '.');
   }
 }
 
 async function uiSortear() {
-  if (!eventoAtivo) { showToast('Selecione um evento','warn'); return; }
+  if (!_eventoAtivo) { showToast('Selecione um evento','warn'); return; }
   const n   = parseInt(document.getElementById('numTimes').value) || 2;
   const min = parseInt(document.getElementById('minPorTime').value) || 4;
-  const linha = jogadoresCache.filter(j => !j.goleiro).length;
+  const linha = _jogadores.filter(j => !j.goleiro).length;
   if (linha < n * min) {
-    showToast(`⚠️ Mínimo ${n*min} jogadores de linha para ${n} times!`,'warn');
-    return;
+    showToast(`⚠️ Precisa de ${n*min} jogadores de linha!`,'warn'); return;
   }
-
-  const goleiros = jogadoresCache.filter(j => j.goleiro);
+  const goleiros = _jogadores.filter(j => j.goleiro);
   const gSec = document.getElementById('goleirosSection');
   if (goleiros.length) {
     gSec.style.display = 'block';
     document.getElementById('goleirosChips').innerHTML = goleiros.map(g =>
-      `<span class="goleiro-chip">🧤 ${g.nome} ${renderStars(g.nivel||1)}</span>`  // ← supabase.js
+      `<span class="goleiro-chip">🧤 ${g.nome} ${renderStars(g.nivel||1)}</span>`
     ).join('');
   } else { gSec.style.display = 'none'; }
 
-  const { times, reservas } = sortearTimesEquilibrado(jogadoresCache, n); // ← supabase.js
-  timesGerados = times;
+  const { times, reservas } = sortearTimesEquilibrado(_jogadores, n);
+  _timesGerados = times;
 
-  const resultado = document.getElementById('timesResultado');
-  resultado.innerHTML = `<div class="times-grid">${times.map(t => `
-    <div class="time-card ${t.extra?'time-extra':''}">
-      <div class="time-header" style="background:${t.extra?'transparent':t.cor}">
-        <span>${t.nome}${t.extra?' (Extra)':''}</span>
-        <span class="stars-total">⭐ ${t.totalEstrelas}</span>
-      </div>
-      <div class="time-body">
-        ${t.jogadores.map(j=>`<div class="time-player">${renderStars(j.nivel||1)}<span>${j.nome}</span></div>`).join('')}
-        <div class="time-qtd">${t.jogadores.length} jogador${t.jogadores.length!==1?'es':''}</div>
-      </div>
-    </div>
-  `).join('')}</div>`;
-
-  if (reservas.length) {
-    resultado.innerHTML += `<div class="alerta alerta-warn" style="margin-top:10px">
-      ⚠️ Reservas/Banco: ${reservas.map(r => r.nome).join(', ')}
-    </div>`;
-  }
+  document.getElementById('timesResultado').innerHTML =
+    '<div class="times-grid">' +
+    times.map(t => `
+      <div class="time-card ${t.extra?'time-extra':''}">
+        <div class="time-header" style="background:${t.extra?'transparent':t.cor}">
+          <span>${t.nome}${t.extra?' (Extra)':''}</span>
+          <span class="stars-total">⭐${t.totalEstrelas}</span>
+        </div>
+        <div class="time-body">
+          ${t.jogadores.map(j=>`<div class="time-player">${renderStars(j.nivel||1)}<span>${j.nome}</span></div>`).join('')}
+          <div class="time-qtd">${t.jogadores.length} jogador${t.jogadores.length!==1?'es':''}</div>
+        </div>
+      </div>`).join('') +
+    '</div>' +
+    (reservas.length ? `<div class="alerta alerta-warn" style="margin-top:10px">⚠️ Banco: ${reservas.map(r=>r.nome).join(', ')}</div>` : '');
 
   document.getElementById('btnPublicar').style.display = 'block';
   showToast('🎲 Times sorteados!','ok');
 }
 
 async function uiPublicarTimes() {
-  if (!timesGerados || !eventoAtivo) return;
-  setLoading(true,'Publicando...');
-  await atualizarEvento(eventoAtivo, { times_sorteados: JSON.stringify(timesGerados) }); // ← supabase.js
+  if (!_timesGerados || !_eventoAtivo) return;
+  setLoading(true, 'Publicando...');
+  await atualizarEvento(_eventoAtivo, { times_sorteados: JSON.stringify(_timesGerados) });
   setLoading(false);
   showToast('📢 Times publicados!','ok');
 }
 
-/* ══════════════════════════
-   PIX
-   ══════════════════════════ */
+/* ── Pix ── */
 async function uiCarregarPix() {
-  if (!eventoAtivo) return;
-  const { data: evt } = await getEvento(eventoAtivo); // ← supabase.js
-  if (evt?.chave_pix) {
-    try {
-      const p = JSON.parse(evt.chave_pix);
-      document.getElementById('pixChave').value       = p.chave || '';
-      document.getElementById('pixNome').value        = p.nome  || '';
-      document.getElementById('pixTipo').value        = p.tipo  || 'telefone';
-      document.getElementById('pixValorCampo').value  = p.valor || '';
-    } catch {}
-  }
+  if (!_eventoData?.chave_pix) return;
+  try {
+    const p = JSON.parse(_eventoData.chave_pix);
+    document.getElementById('pixChave').value      = p.chave || '';
+    document.getElementById('pixNome').value       = p.nome  || '';
+    document.getElementById('pixTipo').value       = p.tipo  || 'telefone';
+    document.getElementById('pixValorCampo').value = p.valor || '';
+  } catch {}
 }
 
 async function uiGerarQR() {
@@ -710,77 +681,68 @@ async function uiGerarQR() {
   const tipo  = document.getElementById('pixTipo').value;
   let valor   = parseFloat(document.getElementById('pixValorCampo').value) || 0;
   if (!chave) { showToast('⚠️ Informe a chave Pix','warn'); return; }
-  if (!valor && eventoAtivo) {
-    const { data: evt } = await getEvento(eventoAtivo); // ← supabase.js
-    valor = evt?.valor || 0;
-  }
+  if (!valor) valor = _eventoData?.valor || 0;
   const pixStr = uiGerarPixStr(chave, nome, valor);
-  pixConfig = { chave, nome, tipo, valor, pixStr };
+  _pixConfig = { chave, nome, tipo, valor, pixStr };
   document.getElementById('qrSection').style.display = 'block';
   document.getElementById('pixChaveExibir').textContent =
-    `${tipo.toUpperCase()}: ${chave}${nome?' · '+nome:''}${valor?' · '+formatBRL(valor):''}`;  // ← supabase.js
-  QRCode.toCanvas(document.getElementById('qrCanvas'), pixStr, {
-    width: 220, margin: 2, color: { dark:'#000000', light:'#ffffff' }
-  });
+    tipo.toUpperCase() + ': ' + chave +
+    (nome  ? ' · ' + nome  : '') +
+    (valor ? ' · ' + formatBRL(valor) : '');
+  QRCode.toCanvas(document.getElementById('qrCanvas'), pixStr,
+    { width: 220, margin: 2, color: { dark:'#000000', light:'#ffffff' } });
 }
 
 function uiGerarPixStr(chave, nome, valor) {
-  const f = (id, v) => id + v.length.toString().padStart(2,'0') + v;
-  const gui   = f('00','br.gov.bcb.pix') + f('01', chave);
-  const merch = f('26', gui);
-  const nomeF = (nome||'RECEBEDOR').substring(0,25).toUpperCase();
+  const f = (id, v) => id + String(v.length).padStart(2,'0') + v;
+  const merch = f('26', f('00','br.gov.bcb.pix') + f('01', chave));
+  const nomeF = (nome || 'RECEBEDOR').substring(0,25).toUpperCase();
   const valF  = valor > 0 ? f('54', valor.toFixed(2)) : '';
-  let str = f('00','01') + f('01','12') + merch + f('52','0000') + f('53','986') + valF +
-            f('58','BR') + f('59', nomeF) + f('60','SAO PAULO') + f('62', f('05','***'));
-  str += '6304';
+  let s = f('00','01') + f('01','12') + merch + f('52','0000') + f('53','986') +
+          valF + f('58','BR') + f('59', nomeF) + f('60','SAO PAULO') + f('62', f('05','***')) + '6304';
   let crc = 0xFFFF;
-  for (const c of new TextEncoder().encode(str)) {
-    crc ^= c << 8;
-    for (let i=0; i<8; i++) crc = crc & 0x8000 ? (crc<<1)^0x1021 : crc<<1;
-  }
-  return str + (crc & 0xFFFF).toString(16).toUpperCase().padStart(4,'0');
+  for (const c of new TextEncoder().encode(s))
+    for (crc ^= c<<8, _=0; _<8; _++) crc = crc&0x8000 ? (crc<<1)^0x1021 : crc<<1;
+  return s + (crc&0xFFFF).toString(16).toUpperCase().padStart(4,'0');
 }
 
 async function uiSalvarPix() {
-  if (!pixConfig || !eventoAtivo) { showToast('Gere o QR primeiro','warn'); return; }
+  if (!_pixConfig || !_eventoAtivo) { showToast('Gere o QR primeiro','warn'); return; }
   setLoading(true);
-  await atualizarEvento(eventoAtivo, { chave_pix: JSON.stringify(pixConfig) }); // ← supabase.js
+  await atualizarEvento(_eventoAtivo, { chave_pix: JSON.stringify(_pixConfig) });
   setLoading(false);
+  _eventoData = { ..._eventoData, chave_pix: JSON.stringify(_pixConfig) };
   showToast('💾 Pix salvo!','ok');
 }
 
-/* ══════════════════════════
-   WHATSAPP
-   ══════════════════════════ */
-async function uiPreviewWhats() {
+/* ── WhatsApp ── */
+function uiPreviewWhats() {
   const el = document.getElementById('msgPreview');
-  if (!eventoAtivo) { el.textContent = 'Selecione um evento para ver o preview.'; return; }
-  const { data: evt } = await getEvento(eventoAtivo); // ← supabase.js
-  if (!evt) return;
-  const custom = document.getElementById('whatsMsg').value.trim();
-  el.textContent = custom || uiMsgWhats(evt);
+  if (!_eventoData) { el.textContent = 'Selecione um evento para ver o preview.'; return; }
+  const custom = document.getElementById('whatsMsg')?.value?.trim();
+  el.textContent = custom || uiMsgWhats();
 }
 
-function uiMsgWhats(evt) {
-  const n  = jogadoresCache.length;
-  const gl = jogadoresCache.filter(j => j.goleiro).length;
-  const dt = evt.data ? new Date(evt.data+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'}) : '';
-  const link = `https://opgmoraes.github.io/taldofut/lista.html?id=${eventoAtivo}`;
-  return `⚽ *${evt.nome}*\n\n📅 ${dt}${evt.hora?' às '+evt.hora:''}\n📍 ${evt.local||'A definir'}\n💰 ${evt.valor ? formatBRL(evt.valor)+' por pessoa' : 'A definir'}\n\n👥 Lista: *${n} jogadores* (${gl} goleiro${gl!==1?'s':''})\n\nEntrar na lista ou ver times:\n${link}\n\nConfirme sua presença! ⚽🔥`;
+function uiMsgWhats() {
+  const e  = _eventoData;
+  const n  = _jogadores.length;
+  const gl = _jogadores.filter(j => j.goleiro).length;
+  const dt = e.data
+    ? new Date(e.data + 'T12:00:00').toLocaleDateString('pt-BR', { weekday:'long', day:'numeric', month:'long' })
+    : '';
+  const link = 'https://opgmoraes.github.io/taldofut/lista.html?id=' + _eventoAtivo;
+  return `⚽ *${e.nome}*\n\n📅 ${dt}${e.hora?' às '+e.hora:''}\n📍 ${e.local||'A definir'}\n💰 ${e.valor?formatBRL(e.valor)+' por pessoa':'A definir'}\n\n👥 Lista: *${n} jogadores* (${gl} goleiro${gl!==1?'s':''})\n\n${link}\n\nConfirme sua presença! ⚽🔥`;
 }
 
 async function uiAbrirWhatsApp() {
-  if (!eventoAtivo) { showToast('Selecione um evento','warn'); return; }
-  const { data: evt } = await getEvento(eventoAtivo); // ← supabase.js
+  if (!_eventoAtivo) { showToast('Selecione um evento','warn'); return; }
   const numero = document.getElementById('whatsNumero').value.trim().replace(/\D/g,'');
   const custom = document.getElementById('whatsMsg').value.trim();
-  const msg    = encodeURIComponent(custom || uiMsgWhats(evt));
-  window.open(numero ? `https://wa.me/${numero}?text=${msg}` : `https://wa.me/?text=${msg}`, '_blank');
+  const msg    = encodeURIComponent(custom || uiMsgWhats());
+  window.open(numero ? 'https://wa.me/'+numero+'?text='+msg : 'https://wa.me/?text='+msg, '_blank');
 }
 
-/* ══════════════════════════
-   START
-   ══════════════════════════ */
+/* ── Start ── */
 init();
 </script>
 </body>
