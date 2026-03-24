@@ -720,8 +720,24 @@ async function uiGerarQR() {
     tipo.toUpperCase() + ': ' + chave +
     (nome  ? ' · ' + nome  : '');
   document.getElementById('pixCopiado').style.display = 'none';
-  QRCode.toCanvas(document.getElementById('qrCanvas'), pixStr,
-    { width: 220, margin: 2, color: { dark:'#000000', light:'#ffffff' } });
+
+  // Garante que o canvas está visível antes de renderizar
+  const canvas = document.getElementById('qrCanvas');
+  canvas.width  = 220;
+  canvas.height = 220;
+  await new Promise(r => setTimeout(r, 50));
+  try {
+    await QRCode.toCanvas(canvas, pixStr,
+      { width: 220, margin: 2, color: { dark: '#000000', light: '#ffffff' } });
+  } catch (e) {
+    // Fallback: gera como Data URL e exibe via <img>
+    const url = await QRCode.toDataURL(pixStr, { width: 220, margin: 2 });
+    canvas.style.display = 'none';
+    let img = document.getElementById('qrImg');
+    if (!img) { img = document.createElement('img'); img.id = 'qrImg'; canvas.parentNode.insertBefore(img, canvas); }
+    img.src = url;
+    img.style.cssText = 'width:220px;height:220px;border-radius:8px;display:block;margin:0 auto';
+  }
 }
 
 async function uiCopiarPix() {
