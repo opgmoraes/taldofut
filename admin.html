@@ -253,13 +253,38 @@
     <div id="tab-whats" class="tab-panel">
       <div class="section">
         <div class="section-title">📲 Lembrete WhatsApp</div>
-        <div class="field-group" style="margin-bottom:14px">
+
+        <!-- Toggle grupo / individual -->
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <button id="btnModoGrupo"
+            class="btn btn-primary btn-sm"
+            style="flex:1"
+            onclick="uiWhatsMode('grupo')">👥 Grupo</button>
+          <button id="btnModoIndividual"
+            class="btn btn-outline btn-sm"
+            style="flex:1"
+            onclick="uiWhatsMode('individual')">👤 Individual</button>
+        </div>
+
+        <!-- Link do grupo -->
+        <div id="campoGrupo" class="field-group" style="margin-bottom:14px">
+          <label>Link do grupo do WhatsApp</label>
+          <input type="url" id="whatsGrupo" placeholder="https://chat.whatsapp.com/..."
+            oninput="uiPreviewWhats()"/>
+          <div style="font-size:0.75rem;color:rgba(255,255,255,0.35);margin-top:4px">
+            No WhatsApp: abra o grupo → ⋮ → Convidar via link → Copiar link
+          </div>
+        </div>
+
+        <!-- Número individual -->
+        <div id="campoIndividual" class="field-group" style="display:none;margin-bottom:14px">
           <label>Número (com DDI e DDD, sem +)</label>
           <input type="tel" id="whatsNumero" placeholder="5511999999999"/>
         </div>
+
         <div class="field-group" style="margin-bottom:16px">
           <label>Mensagem personalizada (opcional)</label>
-          <textarea id="whatsMsg" placeholder="Deixe vazio para usar a mensagem padrão..."></textarea>
+          <textarea id="whatsMsg" placeholder="Deixe vazio para usar a mensagem padrão..." oninput="uiPreviewWhats()"></textarea>
         </div>
         <button class="btn btn-whatsapp btn-full" onclick="uiAbrirWhatsApp()">📲 Abrir WhatsApp</button>
       </div>
@@ -734,12 +759,38 @@ function uiMsgWhats() {
   return `⚽ *${e.nome}*\n\n📅 ${dt}${e.hora?' às '+e.hora:''}\n📍 ${e.local||'A definir'}\n💰 ${e.valor?formatBRL(e.valor)+' por pessoa':'A definir'}\n\n👥 Lista: *${n} jogadores* (${gl} goleiro${gl!==1?'s':''})\n\n${link}\n\nConfirme sua presença! ⚽🔥`;
 }
 
+let _whatsMode = 'grupo';
+
+function uiWhatsMode(modo) {
+  _whatsMode = modo;
+  document.getElementById('campoGrupo').style.display     = modo === 'grupo'      ? 'block' : 'none';
+  document.getElementById('campoIndividual').style.display = modo === 'individual' ? 'block' : 'none';
+  document.getElementById('btnModoGrupo').className      = 'btn btn-sm ' + (modo === 'grupo'      ? 'btn-primary' : 'btn-outline');
+  document.getElementById('btnModoIndividual').className = 'btn btn-sm ' + (modo === 'individual' ? 'btn-primary' : 'btn-outline');
+  document.getElementById('btnModoGrupo').style.flex = '1';
+  document.getElementById('btnModoIndividual').style.flex = '1';
+}
+
 async function uiAbrirWhatsApp() {
   if (!_eventoAtivo) { showToast('Selecione um evento','warn'); return; }
-  const numero = document.getElementById('whatsNumero').value.trim().replace(/\D/g,'');
   const custom = document.getElementById('whatsMsg').value.trim();
   const msg    = encodeURIComponent(custom || uiMsgWhats());
-  window.open(numero ? 'https://wa.me/'+numero+'?text='+msg : 'https://wa.me/?text='+msg, '_blank');
+
+  if (_whatsMode === 'grupo') {
+    const linkGrupo = document.getElementById('whatsGrupo').value.trim();
+    if (!linkGrupo) { showToast('⚠️ Cole o link do grupo primeiro','warn'); return; }
+    if (!linkGrupo.startsWith('https://chat.whatsapp.com/')) {
+      showToast('⚠️ Link inválido. Use o link de convite do grupo','warn'); return;
+    }
+    // Abre o grupo direto (não dá pra pré-preencher mensagem em grupos via URL)
+    // então copiamos a mensagem e abrimos o grupo
+    try { await navigator.clipboard.writeText(custom || uiMsgWhats()); } catch {}
+    showToast('📋 Mensagem copiada! Cole no grupo ao abrir.','ok');
+    setTimeout(() => window.open(linkGrupo, '_blank'), 600);
+  } else {
+    const numero = document.getElementById('whatsNumero').value.trim().replace(/\D/g,'');
+    window.open(numero ? 'https://wa.me/'+numero+'?text='+msg : 'https://wa.me/?text='+msg, '_blank');
+  }
 }
 
 /* ── Start ── */
