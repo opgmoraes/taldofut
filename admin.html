@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="style.css"/>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>"/>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
@@ -242,7 +242,7 @@
       <div id="qrSection" class="section" style="display:none">
         <div class="section-title">📱 QR Code Pix</div>
         <div class="pix-box">
-          <canvas id="qrCanvas"></canvas>
+          <div id="qrCanvas" style="display:flex;justify-content:center"></div>
           <div id="pixValorExibir" style="font-size:1.5rem;font-weight:800;color:var(--ouro);margin:8px 0 2px"></div>
           <div class="pix-chave" id="pixChaveExibir"></div>
         </div>
@@ -717,27 +717,21 @@ async function uiGerarQR() {
   document.getElementById('qrSection').style.display = 'block';
   document.getElementById('pixValorExibir').textContent = valor ? formatBRL(valor) : '';
   document.getElementById('pixChaveExibir').textContent =
-    tipo.toUpperCase() + ': ' + chave +
-    (nome  ? ' · ' + nome  : '');
+    tipo.toUpperCase() + ': ' + chave + (nome ? ' · ' + nome : '');
   document.getElementById('pixCopiado').style.display = 'none';
 
-  // Garante que o canvas está visível antes de renderizar
-  const canvas = document.getElementById('qrCanvas');
-  canvas.width  = 220;
-  canvas.height = 220;
-  await new Promise(r => setTimeout(r, 50));
-  try {
-    await QRCode.toCanvas(canvas, pixStr,
-      { width: 220, margin: 2, color: { dark: '#000000', light: '#ffffff' } });
-  } catch (e) {
-    // Fallback: gera como Data URL e exibe via <img>
-    const url = await QRCode.toDataURL(pixStr, { width: 220, margin: 2 });
-    canvas.style.display = 'none';
-    let img = document.getElementById('qrImg');
-    if (!img) { img = document.createElement('img'); img.id = 'qrImg'; canvas.parentNode.insertBefore(img, canvas); }
-    img.src = url;
-    img.style.cssText = 'width:220px;height:220px;border-radius:8px;display:block;margin:0 auto';
-  }
+  // qrcodejs: limpa o container e gera novo QR
+  const container = document.getElementById('qrCanvas');
+  container.innerHTML = '';
+  await new Promise(r => setTimeout(r, 30));
+  new QRCode(container, {
+    text:         pixStr,
+    width:        220,
+    height:       220,
+    colorDark:    '#000000',
+    colorLight:   '#ffffff',
+    correctLevel: QRCode.CorrectLevel.M
+  });
 }
 
 async function uiCopiarPix() {
